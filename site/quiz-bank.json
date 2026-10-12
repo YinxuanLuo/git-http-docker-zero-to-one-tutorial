@@ -1,0 +1,2380 @@
+{
+  "stage1": [
+    {
+      "id": "git-s1-1",
+      "track": "git",
+      "no": 1,
+      "q": "工作区、暂存区、版本库是三个物理上真实存在的存储位置。",
+      "answer": true,
+      "why": "工作区 = 项目文件夹，暂存区 = `.git/index`，版本库 = `.git/objects` + `.git/refs`，都是真实位置。",
+      "from": "git 01 章"
+    },
+    {
+      "id": "git-s1-2",
+      "track": "git",
+      "no": 2,
+      "q": "`git add` 会把文件的当前内容拍一张快照放进暂存区。",
+      "answer": true,
+      "why": "`git add` 拍的是\"这一刻\"的内容快照；之后你再改文件，暂存区里的不会跟着变（`AM` 就是证据）。",
+      "from": "git 01 章"
+    },
+    {
+      "id": "git-s1-3",
+      "track": "git",
+      "no": 3,
+      "q": "`git commit` 会把工作区里所有改动（包括没 `add` 的）一起提交。",
+      "answer": false,
+      "why": "`git commit` 只认暂存区里的东西；没 `add` 的改动留在工作区，不进这次提交。",
+      "from": "git 01 章"
+    },
+    {
+      "id": "git-s1-4",
+      "track": "git",
+      "no": 4,
+      "q": "暂存区的物理实体就是 `.git/index` 文件。",
+      "answer": true,
+      "why": "暂存区就是 `.git/index`，一个二进制文件，可用 `git ls-files --stage` 查看内容。",
+      "from": "git 01 章"
+    },
+    {
+      "id": "git-s1-5",
+      "track": "git",
+      "no": 5,
+      "q": "`HEAD` 文件里直接存着一个 commit 的完整 40 位哈希。",
+      "answer": false,
+      "why": "`HEAD` 通常存 `ref: refs/heads/master`（指向分支的引用），真正的哈希在 `refs/heads/master` 里。",
+      "from": "git 01 章"
+    },
+    {
+      "id": "git-s1-6",
+      "track": "git",
+      "no": 6,
+      "q": "分支是一个指向某个 commit 的指针（一个写着哈希的小文件）。",
+      "answer": true,
+      "why": "分支 = `refs/heads/` 下的一个文件，内容是一行 commit 哈希；创建/删除都是读写一行字。",
+      "from": "git 03 章"
+    },
+    {
+      "id": "git-s1-7",
+      "track": "git",
+      "no": 7,
+      "q": "删除一个分支，会同时删除它上面独有的 commit。",
+      "answer": false,
+      "why": "删分支只是删指针，commit 对象还在 `.git/objects/` 里（之后可能被 GC 回收）。",
+      "from": "git 03 章"
+    },
+    {
+      "id": "git-s1-8",
+      "track": "git",
+      "no": 8,
+      "q": "commit 对象里保存着这次提交的 diff（改动清单）。",
+      "answer": false,
+      "why": "commit 存的是快照（tree）+ 父指针（parent）+ 元信息，diff 是 `git show`/`git diff` 现场算出来的。",
+      "from": "git 02 章"
+    },
+    {
+      "id": "git-s1-9",
+      "track": "git",
+      "no": 9,
+      "q": "一个 merge 提交可以有两个 parent。",
+      "answer": true,
+      "why": "merge commit 有两个 parent（分别指向被合并的两条线）；普通提交一个，root 提交零个。",
+      "from": "git 02 章"
+    },
+    {
+      "id": "git-s1-10",
+      "track": "git",
+      "no": 10,
+      "q": "快进合并（fast-forward）会生成一个新的 merge commit。",
+      "answer": false,
+      "why": "快进合并只是把指针平移，不生成新 commit；三方合并才生成 merge commit。",
+      "from": "git 03 章"
+    },
+    {
+      "id": "git-s1-11",
+      "track": "git",
+      "no": 11,
+      "q": "冲突时，Git 会丢弃其中一方的改动。",
+      "answer": false,
+      "why": "冲突时两个版本都完整保留在冲突标记里，Git 只是停下等你裁决，不丢弃任何东西。",
+      "from": "git 04 章"
+    },
+    {
+      "id": "git-s1-12",
+      "track": "git",
+      "no": 12,
+      "q": "`git merge --abort` 可以撤销一次已经触发了冲突的合并。",
+      "answer": true,
+      "why": "`git merge --abort` 撤销合并，回到冲突前，不产生任何新 commit。",
+      "from": "git 04 章"
+    },
+    {
+      "id": "git-s1-13",
+      "track": "git",
+      "no": 13,
+      "q": "`git reset --hard` 会把工作区里未提交的改动一并抹掉。",
+      "answer": true,
+      "why": "`--hard` 连工作区一起覆盖，会抹掉所有未提交改动，是最危险的一档。",
+      "from": "git 05 章"
+    },
+    {
+      "id": "git-s1-14",
+      "track": "git",
+      "no": 14,
+      "q": "`git revert` 会改写历史。",
+      "answer": false,
+      "why": "`revert` 是追加一个\"反向提交\"，不改历史；`reset` 才改写历史。",
+      "from": "git 05 章"
+    },
+    {
+      "id": "git-s1-15",
+      "track": "git",
+      "no": 15,
+      "q": "`git reflog` 记录的是 HEAD 的移动轨迹。",
+      "answer": true,
+      "why": "`git reflog` 记录 HEAD 每次移动（commit/reset/rebase/checkout），是误操作的后悔药。",
+      "from": "git 05 章"
+    },
+    {
+      "id": "git-s1-16",
+      "track": "git",
+      "no": 16,
+      "q": "`origin` 是 Git 的特殊关键字，不能改成别的名字。",
+      "answer": false,
+      "why": "`origin` 只是 `git remote add` 时给 URL 起的别名，可改名、可加多个（如 upstream）。",
+      "from": "git 06 章"
+    },
+    {
+      "id": "git-s1-17",
+      "track": "git",
+      "no": 17,
+      "q": "`git fetch` 会把远程的改动合并进你的本地分支。",
+      "answer": false,
+      "why": "`fetch` 只下载并更新 `origin/master` 影子，不合并；`pull` 才是 fetch + merge。",
+      "from": "git 06 章"
+    },
+    {
+      "id": "git-s1-18",
+      "track": "git",
+      "no": 18,
+      "q": "`origin/master` 是远程 master 分支在你本地的一份快照。",
+      "answer": true,
+      "why": "`origin/master` 是远程 master 的本地快照，只在 fetch/push 时更新。",
+      "from": "git 06 章"
+    },
+    {
+      "id": "git-s1-19",
+      "track": "git",
+      "no": 19,
+      "q": "`git rebase` 会重写提交（导致哈希变化）。",
+      "answer": true,
+      "why": "rebase 把提交\"重放\"到新基底，parent 变了，哈希必然变。",
+      "from": "git 07 章"
+    },
+    {
+      "id": "git-s1-20",
+      "track": "git",
+      "no": 20,
+      "q": "可以对一个已经推送到公共仓库的分支安全地执行 rebase。",
+      "answer": false,
+      "why": "rebase 会改写共享历史，坑到已经 pull 过的人；公共分支只能用 merge。",
+      "from": "git 07 章"
+    },
+    {
+      "id": "http-s1-1",
+      "track": "http",
+      "no": 1,
+      "q": "TCP 是字节流，所以\"你 write 几次，对方就 data 几次\"是保证的。",
+      "answer": false,
+      "why": "TCP 是字节流，**没有消息边界**，3 次 write 可能被对方 1 次 data 读走。",
+      "from": "http 01 章"
+    },
+    {
+      "id": "http-s1-2",
+      "track": "http",
+      "no": 2,
+      "q": "端口是一个 0 到 65535 的整数，用来区分同一台机器上的不同程序。",
+      "answer": true,
+      "why": "端口就是\"程序的门牌号\"，用来在机器内区分不同的服务。",
+      "from": "http 01 章"
+    },
+    {
+      "id": "http-s1-3",
+      "track": "http",
+      "no": 3,
+      "q": "三次握手是为了让双方交换初始序列号，并各自确认\"我能发、你能收\"。",
+      "answer": true,
+      "why": "三次握手 = 交换初始序列号 + 双向确认收发能力。",
+      "from": "http 02 章"
+    },
+    {
+      "id": "http-s1-4",
+      "track": "http",
+      "no": 4,
+      "q": "TCP 的序列号是按\"包\"编号的，不是按\"字节\"编号的。",
+      "answer": false,
+      "why": "序列号按**字节**编号，不是按\"包\"，因为数据可能被任意切分。",
+      "from": "http 02 章"
+    },
+    {
+      "id": "http-s1-5",
+      "track": "http",
+      "no": 5,
+      "q": "TCP 通过\"序列号 + 确认号 + 超时重传\"，在连接存续期间保证字节不丢、不乱、不重复。",
+      "answer": true,
+      "why": "这就是 TCP 可靠性的完整闭环：丢包靠重传、乱序靠序号、重复靠去重。",
+      "from": "http 02 章"
+    },
+    {
+      "id": "http-s1-6",
+      "track": "http",
+      "no": 6,
+      "q": "断开连接是四次挥手，因为 TCP 是双向的，两个方向要各自独立关闭。",
+      "answer": true,
+      "why": "TCP 双向，两个方向各发一个 FIN，所以是四次。",
+      "from": "http 02 章"
+    },
+    {
+      "id": "http-s1-7",
+      "track": "http",
+      "no": 7,
+      "q": "`127.0.0.1` 和 `localhost` 永远指向同一个东西，可以随意混用。",
+      "answer": false,
+      "why": "`localhost` 是域名，可能解析成 `::1`（IPv6）；`127.0.0.1` 是写死的 IPv4。",
+      "from": "http 01 章"
+    },
+    {
+      "id": "http-s1-8",
+      "track": "http",
+      "no": 8,
+      "q": "一个 IP 地址配合子网掩码，能算出它所属的网络地址。",
+      "answer": true,
+      "why": "IP 与掩码按位与，得到网络地址，用于判断是否同一网段。",
+      "from": "http 03 章"
+    },
+    {
+      "id": "http-s1-9",
+      "track": "http",
+      "no": 9,
+      "q": "`dns.lookup` 会先查 hosts 文件，`dns.resolve4` 跳过 hosts 直接问 DNS 服务器。",
+      "answer": true,
+      "why": "`lookup` 走系统解析（含 hosts），`resolve4` 跳过 hosts 直接问 DNS。",
+      "from": "http 03 章"
+    },
+    {
+      "id": "http-s1-10",
+      "track": "http",
+      "no": 10,
+      "q": "HTTP 是应用层协议，跑在 TCP 之上，报文是纯文本的。",
+      "answer": true,
+      "why": "HTTP 是应用层文本协议，因 TCP 可靠而敢用纯文本。",
+      "from": "http 04 章"
+    },
+    {
+      "id": "http-s1-11",
+      "track": "http",
+      "no": 11,
+      "q": "HTTP 请求报文由\"请求行 + 请求头 + 消息体\"组成，头和体之间用空行分隔。",
+      "answer": true,
+      "why": "请求报文 = 请求行 + 头 + （空行）+ 体。",
+      "from": "http 04 章"
+    },
+    {
+      "id": "http-s1-12",
+      "track": "http",
+      "no": 12,
+      "q": "GET 请求可以携带消息体，而且这是推荐做法。",
+      "answer": false,
+      "why": "规范没禁 GET 带 body，但语义混乱、服务器/代理不保证处理，数据应放 query string。",
+      "from": "http 04 章"
+    },
+    {
+      "id": "http-s1-13",
+      "track": "http",
+      "no": 13,
+      "q": "POST 请求是幂等的，可以放心地自动重试。",
+      "answer": false,
+      "why": "POST 不幂等，每次新建；重试 100 次就建 100 条。",
+      "from": "http 04 章"
+    },
+    {
+      "id": "http-s1-14",
+      "track": "http",
+      "no": 14,
+      "q": "状态码 304 表示\"资源永久重定向到新地址\"。",
+      "answer": false,
+      "why": "304 是\"Not Modified\"（缓存没变），不是重定向；301 才是永久重定向。",
+      "from": "http 04 章"
+    },
+    {
+      "id": "http-s1-15",
+      "track": "http",
+      "no": 15,
+      "q": "状态码 401 表示\"没登录\"，403 表示\"登录了但没权限\"。",
+      "answer": true,
+      "why": "401 = \"你是谁？\"，403 = \"我知道你，但你不许看\"。",
+      "from": "http 04 章"
+    },
+    {
+      "id": "http-s1-16",
+      "track": "http",
+      "no": 16,
+      "q": "HTTPS 是用对称加密来交换非对称密钥，之后全程用非对称加密传数据。",
+      "answer": false,
+      "why": "反了：非对称加密交换对称密钥，之后全程**对称**加密。",
+      "from": "http 05 章"
+    },
+    {
+      "id": "http-s1-17",
+      "track": "http",
+      "no": 17,
+      "q": "TLS 证书的作用是证明\"这个公钥真的属于目标服务器\"，从而防中间人偷换公钥。",
+      "answer": true,
+      "why": "证书 = CA 给公钥盖章，浏览器用内置 CA 公钥验签，防中间人偷换公钥。",
+      "from": "http 05 章"
+    },
+    {
+      "id": "http-s1-18",
+      "track": "http",
+      "no": 18,
+      "q": "`Cache-Control: no-cache` 表示\"完全不缓存\"。",
+      "answer": false,
+      "why": "`no-cache` 是\"缓存但每次先问\"，`no-store` 才是\"完全不缓存\"。",
+      "from": "http 06 章"
+    },
+    {
+      "id": "http-s1-19",
+      "track": "http",
+      "no": 19,
+      "q": "Cookie 的 `HttpOnly` 属性让 JavaScript 读不到它，能防止 XSS 偷走登录凭证。",
+      "answer": true,
+      "why": "`HttpOnly` 让 `document.cookie` 读不到，XSS 偷不走登录凭证。",
+      "from": "http 06 章"
+    },
+    {
+      "id": "http-s1-20",
+      "track": "http",
+      "no": 20,
+      "q": "HTTP/2 的多路复用彻底解决了 TCP 层的队头阻塞。",
+      "answer": false,
+      "why": "HTTP/2 只解决**应用层**队头阻塞；仍跑在 TCP 上，TCP 层队头阻塞还在，HTTP/3 才解决。",
+      "from": "http 07 章"
+    },
+    {
+      "id": "docker-s1-1",
+      "track": "docker",
+      "no": 1,
+      "q": "镜像是只读的，容器是可写的、可销毁的运行实例。",
+      "answer": true,
+      "why": "镜像是只读的构建产物（类），容器是可写可销毁的运行实例（实例）。",
+      "from": "docker 01 章"
+    },
+    {
+      "id": "docker-s1-2",
+      "track": "docker",
+      "no": 2,
+      "q": "容器就是一台\"轻量级虚拟机\"，每个容器里都跑着一个完整的操作系统。",
+      "answer": false,
+      "why": "容器不是虚拟机，它共享宿主内核，只隔离用户空间，不跑完整 OS。",
+      "from": "docker 01 章"
+    },
+    {
+      "id": "docker-s1-3",
+      "track": "docker",
+      "no": 3,
+      "q": "容器里的数据默认写在\"可写层\"，删除容器后这些数据就没了。",
+      "answer": true,
+      "why": "容器写入都进\"可写层\"，容器删除时可写层随之一同销毁。",
+      "from": "docker 06 章"
+    },
+    {
+      "id": "docker-s1-4",
+      "track": "docker",
+      "no": 4,
+      "q": "`docker run` 等价于 `docker create` + `docker start` + `docker attach`。",
+      "answer": true,
+      "why": "`run` 是\"一步到位\"的快捷方式，拆开就是 create + start + attach。",
+      "from": "docker 03 章"
+    },
+    {
+      "id": "docker-s1-5",
+      "track": "docker",
+      "no": 5,
+      "q": "`docker ps` 会列出所有状态的容器，包括已停止的。",
+      "answer": false,
+      "why": "`docker ps` 默认只显示 running 的容器，要看全部得加 `-a`。",
+      "from": "docker 03 章"
+    },
+    {
+      "id": "docker-s1-6",
+      "track": "docker",
+      "no": 6,
+      "q": "一个镜像是由多层只读层从下往上叠加而成的。",
+      "answer": true,
+      "why": "镜像是一串只读层叠起来的，上层覆盖下层，这就是 UnionFS/OverlayFS。",
+      "from": "docker 02 章"
+    },
+    {
+      "id": "docker-s1-7",
+      "track": "docker",
+      "no": 7,
+      "q": "`latest` 标签代表这个镜像的最新版本。",
+      "answer": false,
+      "why": "`latest` 只是\"没写 tag 时的默认值\"，不代表最新，且会被移动。",
+      "from": "docker 02 章"
+    },
+    {
+      "id": "docker-s1-8",
+      "track": "docker",
+      "no": 8,
+      "q": "在 Dockerfile 里写了 `EXPOSE 3000`，容器启动后宿主就能直接访问 3000 端口。",
+      "answer": false,
+      "why": "`EXPOSE` 只是声明（元数据），真正开放端口靠 `-p` 或 `-P`。",
+      "from": "docker 04 章"
+    },
+    {
+      "id": "docker-s1-9",
+      "track": "docker",
+      "no": 9,
+      "q": "`RUN` 指令会在容器运行时执行。",
+      "answer": false,
+      "why": "`RUN` 是**构建时**执行的，运行时执行的是 `CMD`/`ENTRYPOINT`。",
+      "from": "docker 04 章"
+    },
+    {
+      "id": "docker-s1-10",
+      "track": "docker",
+      "no": 10,
+      "q": "`CMD` 用 shell 形式（`CMD node server.js`）时，容器的 PID 1 是 `/bin/sh` 而不是 node。",
+      "answer": true,
+      "why": "shell 形式会包一层 `/bin/sh -c`，主进程是 sh，SIGTERM 不直达目标程序。",
+      "from": "docker 04 章"
+    },
+    {
+      "id": "docker-s1-11",
+      "track": "docker",
+      "no": 11,
+      "q": "Dockerfile 里先 `COPY . .` 再 `RUN npm install`，改一行源码会导致重新安装依赖。",
+      "answer": true,
+      "why": "`COPY . .` 在 install 之前，源码一变这层失效，后面的 install 也跟着重跑。",
+      "from": "docker 04 章"
+    },
+    {
+      "id": "docker-s1-12",
+      "track": "docker",
+      "no": 12,
+      "q": "在自定义网络里，容器可以直接用容器名互相访问。",
+      "answer": true,
+      "why": "自定义网络内置 DNS，容器名会自动注册，可直接互访。",
+      "from": "docker 05 章"
+    },
+    {
+      "id": "docker-s1-13",
+      "track": "docker",
+      "no": 13,
+      "q": "在默认 bridge 网络里，容器可以直接用容器名互相访问。",
+      "answer": false,
+      "why": "默认 bridge 是旧实现，没有内置 DNS，只能靠 IP 互访。",
+      "from": "docker 05 章"
+    },
+    {
+      "id": "docker-s1-14",
+      "track": "docker",
+      "no": 14,
+      "q": "`-p 8080:80` 表示把宿主机的 80 端口映射到容器的 8080 端口。",
+      "answer": false,
+      "why": "`-p 宿主:容器`，左边是宿主机 8080，右边是容器 80。",
+      "from": "docker 05 章"
+    },
+    {
+      "id": "docker-s1-15",
+      "track": "docker",
+      "no": 15,
+      "q": "bind mount 和 volume 都能持久化数据，区别是 bind mount 用宿主的绝对路径、volume 由 Docker 管理。",
+      "answer": true,
+      "why": "bind mount 挂宿主路径（开发热更），volume 是 Docker 管理的存储（生产数据）。",
+      "from": "docker 06 章"
+    },
+    {
+      "id": "docker-s1-16",
+      "track": "docker",
+      "no": 16,
+      "q": "`docker rm 容器` 会连同它挂载的命名卷一起删除。",
+      "answer": false,
+      "why": "`docker rm` 不删卷；`docker rm -v` 只删匿名卷，命名卷仍不删。",
+      "from": "docker 06 章"
+    },
+    {
+      "id": "docker-s1-17",
+      "track": "docker",
+      "no": 17,
+      "q": "`depends_on` 能保证被依赖的服务完全就绪后，才启动当前服务。",
+      "answer": false,
+      "why": "`depends_on` 只保证启动顺序，不保证就绪；要等就绪用 healthcheck + `service_healthy`。",
+      "from": "docker 07 章"
+    },
+    {
+      "id": "docker-s1-18",
+      "track": "docker",
+      "no": 18,
+      "q": "`docker compose down` 会删除 compose 文件里声明的卷。",
+      "answer": false,
+      "why": "`down` 只删容器和自动建的网络，卷保留；`down -v` 才连卷删。",
+      "from": "docker 07 章"
+    },
+    {
+      "id": "docker-s1-19",
+      "track": "docker",
+      "no": 19,
+      "q": "多阶段构建可以让最终镜像不包含编译器、dev 依赖等构建工具链。",
+      "answer": true,
+      "why": "多阶段构建把\"构建\"和\"运行\"分开，只把产物拷进最终镜像。",
+      "from": "docker 08 章"
+    },
+    {
+      "id": "docker-s1-20",
+      "track": "docker",
+      "no": 20,
+      "q": "容器默认以 root 用户运行，生产环境建议切到非 root 用户。",
+      "answer": true,
+      "why": "容器默认 root，生产应按最小权限原则切非 root（`USER`）。",
+      "from": "docker 08 章"
+    }
+  ],
+  "stage2": [
+    {
+      "id": "git-s2-1",
+      "track": "git",
+      "no": 1,
+      "code": "// Git 的 blob 对象是\"内容寻址\"的：相同内容 → 相同哈希（自动去重）\nfunction blobId(content) { return content; }  // 简化：用内容本身当\"哈希\"\nconsole.log(blobId('hello') === blobId('hello'), blobId('hello') === blobId('Hello'));",
+      "out": "`true false`",
+      "note": "相同内容 → 相同\"哈希\"（true），改一个字符 → 不同（false），这就是内容寻址。"
+    },
+    {
+      "id": "git-s2-2",
+      "track": "git",
+      "no": 2,
+      "code": "// 两个不同文件名、内容相同，Git 底层只存一个 blob\nconst same = (a, b) => a === b;\nconsole.log(same('file a 内容', 'file b 内容'));",
+      "out": "`true`",
+      "note": "内容相同则底层只存一个 blob，与文件名无关，自动去重。"
+    },
+    {
+      "id": "git-s2-3",
+      "track": "git",
+      "no": 3,
+      "code": "// 三棵树状态码：?? 未跟踪、A 已暂存新文件、 M 工作区已改、M 暂存区已改\n// 新建一个文件但没 add，status -s 的缩写是什么？\nconst statusOf = (untracked) => (untracked ? '??' : 'M ');\nconsole.log(statusOf(true));",
+      "out": "`??`",
+      "note": "未跟踪文件的 `status -s` 缩写是 `??`。"
+    },
+    {
+      "id": "git-s2-4",
+      "track": "git",
+      "no": 4,
+      "code": "// add 之后又改了文件：暂存区是 A，工作区是 M，合起来 status -s 显示什么？\nconsole.log('A ' + 'M');",
+      "out": "`AM`",
+      "note": "第一列 `A `（暂存区）+ 第二列 ` M`（工作区）合起来是 `AM`。"
+    },
+    {
+      "id": "git-s2-5",
+      "track": "git",
+      "no": 5,
+      "code": "// HEAD 指向分支的引用，不是直接存哈希\nconst headFile = 'ref: refs/heads/master';\nconsole.log(headFile.startsWith('ref: refs/heads/'));",
+      "out": "`true`",
+      "note": "HEAD 存的是 `ref: refs/heads/xxx` 这种\"指向分支\"的引用。"
+    },
+    {
+      "id": "git-s2-6",
+      "track": "git",
+      "no": 6,
+      "code": "// 分支文件里存的是 commit 哈希\nconst branchFile = '16344d6e30022e0a9c1115853846cd87437d4562';\nconsole.log(branchFile.length);",
+      "out": "`40`",
+      "note": "SHA-1 哈希是 40 个十六进制字符。"
+    },
+    {
+      "id": "git-s2-7",
+      "track": "git",
+      "no": 7,
+      "code": "// 历史是一条 parent 链：普通提交 1 个 parent，merge 提交 2 个，root 提交 0 个\nconsole.log([0, 1, 2][1]);",
+      "out": "`1`",
+      "note": "普通提交有 1 个 parent（`[0,1,2]` 里下标 1 是 1）。"
+    },
+    {
+      "id": "git-s2-8",
+      "track": "git",
+      "no": 8,
+      "code": "// commit 里没有 diff，只有 tree + parent + author + committer + message\nconst fields = ['tree', 'parent', 'author', 'committer', 'message'];\nconsole.log(fields.includes('diff'));",
+      "out": "`false`",
+      "note": "commit 字段里没有 `diff`——它存快照，diff 是现场算的。"
+    },
+    {
+      "id": "git-s2-9",
+      "track": "git",
+      "no": 9,
+      "code": "// 快进合并：当前分支在分叉后没动 → 直接平移指针，不产生新 commit\nconst fastForward = (mainMoved) => (mainMoved ? '三方合并' : '快进合并');\nconsole.log(fastForward(false));",
+      "out": "`快进合并`",
+      "note": "分叉后当前分支没动（mainMoved=false）→ 快进合并。"
+    },
+    {
+      "id": "git-s2-10",
+      "track": "git",
+      "no": 10,
+      "code": "// 三方合并：两边都动了 → 生成有两个 parent 的 merge commit\nconst parents = (bothMoved) => (bothMoved ? 2 : 1);\nconsole.log(parents(true));",
+      "out": "`2`",
+      "note": "两边都动了（bothMoved=true）→ merge commit 有 2 个 parent。"
+    },
+    {
+      "id": "git-s2-11",
+      "track": "git",
+      "no": 11,
+      "code": "// 冲突标记：<<<<<<< 到 ======= 是当前分支，======= 到 >>>>>>> 是对方\nconst sections = ['HEAD 版本', '=======', '对方版本'];\nconsole.log(sections[0]);",
+      "out": "`HEAD 版本`",
+      "note": "冲突标记第一段是\"当前分支\"（HEAD）的版本。"
+    },
+    {
+      "id": "git-s2-12",
+      "track": "git",
+      "no": 12,
+      "code": "// 解决冲突后必须 git add，把\"阶段 1/2/3\"合并回\"阶段 0\"\nconsole.log(['stage1', 'stage2', 'stage3'].length);",
+      "out": "`3`",
+      "note": "冲突时文件在 index 里有 3 个阶段（base/ours/theirs）。"
+    },
+    {
+      "id": "git-s2-13",
+      "track": "git",
+      "no": 13,
+      "code": "// reset 三兄弟：soft 只挪 HEAD，mixed 挪 HEAD+暂存区，hard 连工作区一起砸\nconst resetMoves = { soft: ['HEAD'], mixed: ['HEAD', 'index'], hard: ['HEAD', 'index', 'worktree'] };\nconsole.log(resetMoves.hard.length);",
+      "out": "`3`",
+      "note": "`--hard` 动 HEAD + 暂存区 + 工作区，共 3 处。"
+    },
+    {
+      "id": "git-s2-14",
+      "track": "git",
+      "no": 14,
+      "code": "// reset --soft HEAD~1 之后，改动还在暂存区（第一列 M）\nconsole.log('M f.txt'.charAt(0));",
+      "out": "`M`",
+      "note": "`reset --soft` 后改动在暂存区，`status -s` 第一列是 `M`。"
+    },
+    {
+      "id": "git-s2-15",
+      "track": "git",
+      "no": 15,
+      "code": "// revert 是追加反向提交，不改历史；reset 让历史变短\nconst revertKeepsHistory = true;\nconsole.log(revertKeepsHistory);",
+      "out": "`true`",
+      "note": "revert 追加反向提交，保留原历史，不改写。"
+    },
+    {
+      "id": "git-s2-16",
+      "track": "git",
+      "no": 16,
+      "code": "// reflog 记录 HEAD 移动轨迹，reset 掉的提交也能在里面找到\nconsole.log('HEAD@{1}: reset: moving to HEAD~1'.includes('reset'));",
+      "out": "`true`",
+      "note": "reflog 条目记录了 reset 操作，被退掉的提交在这里能找到。"
+    },
+    {
+      "id": "git-s2-17",
+      "track": "git",
+      "no": 17,
+      "code": "// fetch 只更新 origin/master 影子，不合并\nconst fetchMerges = false;\nconsole.log(fetchMerges);",
+      "out": "`false`",
+      "note": "fetch 不合并，只更新远程分支影子。"
+    },
+    {
+      "id": "git-s2-18",
+      "track": "git",
+      "no": 18,
+      "code": "// pull = fetch + merge\nconsole.log('fetch' + ' + ' + 'merge');",
+      "out": "`fetch + merge`",
+      "note": "pull 等价于先 fetch 再 merge。"
+    },
+    {
+      "id": "git-s2-19",
+      "track": "git",
+      "no": 19,
+      "code": "// push 被拒：远程有你没有的提交\nconst rejectedReason = 'fetch first';\nconsole.log('! [rejected] master -> master (' + rejectedReason + ')'.includes('rejected'));",
+      "out": "`true`",
+      "note": "push 被拒的原文里含 `rejected`，原因是 `fetch first`（远程领先）。"
+    },
+    {
+      "id": "git-s2-20",
+      "track": "git",
+      "no": 20,
+      "code": "// rebase 把提交重放到目标顶端，历史变直线，但哈希会变\nconst rebaseRewrites = true;\nconsole.log(rebaseRewrites);",
+      "out": "`true`",
+      "note": "rebase 重写提交，哈希会变。"
+    },
+    {
+      "id": "git-s2-21",
+      "track": "git",
+      "no": 21,
+      "code": "// cherry-pick 只摘一个提交的改动，保留原 author\nconst picked = { author: '原作者', committer: '你' };\nconsole.log(picked.author);",
+      "out": "`原作者`",
+      "note": "cherry-pick 保留原提交的 author，committer 才是执行者。"
+    },
+    {
+      "id": "git-s2-22",
+      "track": "git",
+      "no": 22,
+      "code": "// stash 藏起未提交改动；pop 取出并删除\nconst stashAfterPop = [];\nconsole.log(stashAfterPop.length);",
+      "out": "`0`",
+      "note": "`pop` 取出并从 stash 列表删除，列表变空（length 0）。"
+    },
+    {
+      "id": "git-s2-23",
+      "track": "git",
+      "no": 23,
+      "code": "// .gitignore 只对未跟踪文件生效\nconst ignored = (tracked) => (tracked ? '还会被跟踪' : '被忽略');\nconsole.log(ignored(true));",
+      "out": "`还会被跟踪`",
+      "note": "已跟踪的文件，加进 `.gitignore` 也没用。"
+    },
+    {
+      "id": "git-s2-24",
+      "track": "git",
+      "no": 24,
+      "code": "// 标签钉死在某个 commit，不会像分支一样移动\nconst tagMoves = false;\nconsole.log(tagMoves);",
+      "out": "`false`",
+      "note": "标签钉死，不随 commit 移动。"
+    },
+    {
+      "id": "git-s2-25",
+      "track": "git",
+      "no": 25,
+      "code": "// 用 execFileSync 封装 git 命令：命令名 + 参数数组 + 选项对象\nconst args = ['init', '-q', '-b', 'main'];\nconsole.log(args[1]);",
+      "out": "`-q`",
+      "note": "`args[1]` 是 `-q`（`init` 后面的静默参数）。"
+    },
+    {
+      "id": "http-s2-1",
+      "track": "http",
+      "no": 1,
+      "code": "import net from 'node:net';\nconsole.log(net.isIP('127.0.0.1'), net.isIP('::1'), net.isIP('999.1.1.1'));",
+      "out": "`4 6 0`",
+      "note": "`isIP` 返回 4=IPv4、6=IPv6、0=非法。"
+    },
+    {
+      "id": "http-s2-2",
+      "track": "http",
+      "no": 2,
+      "code": "console.log(Buffer.from('hello').toString('hex'));",
+      "out": "`68656c6c6f`",
+      "note": "`h`=68、`e`=65、`l`=6c、`o`=6f，字节流本质。"
+    },
+    {
+      "id": "http-s2-3",
+      "track": "http",
+      "no": 3,
+      "code": "function ipToInt(ip) {\n  return ip.split('.').reduce((a, n) => ((a << 8) >>> 0) + Number(n), 0) >>> 0;\n}\nfunction intToIp(n) {\n  return [24, 16, 8, 0].map((s) => (n >>> s) & 0xff).join('.');\n}\nconst mask = (~0 << (32 - 24)) >>> 0;\nconsole.log(intToIp(ipToInt('192.168.1.10') & mask));",
+      "out": "`192.168.1.0`",
+      "note": "IP 与掩码按位与，得到网络地址。"
+    },
+    {
+      "id": "http-s2-4",
+      "track": "http",
+      "no": 4,
+      "code": "console.log(new URL('https://a.com:8443/p?x=1').origin);",
+      "out": "`https://a.com:8443`",
+      "note": "origin = 协议 + 域名 + 端口。"
+    },
+    {
+      "id": "http-s2-5",
+      "track": "http",
+      "no": 5,
+      "code": "console.log([200, 301, 404, 502].map((n) => Math.floor(n / 100)).join(','));",
+      "out": "`2,3,4,5`",
+      "note": "状态码百位数：2 成功、3 重定向、4 客户错、5 服务器错。"
+    },
+    {
+      "id": "http-s2-6",
+      "track": "http",
+      "no": 6,
+      "code": "const methods = { GET: true, PUT: true, DELETE: true, POST: false, PATCH: 'depends' };\nconsole.log(methods.POST);",
+      "out": "`false`",
+      "note": "POST 不幂等。"
+    },
+    {
+      "id": "http-s2-7",
+      "track": "http",
+      "no": 7,
+      "code": "console.log('POST /users'.startsWith('POST'), 'GET /users/3'.startsWith('GET /users/'));",
+      "out": "`true true`",
+      "note": "精确匹配 POST；`/users/3` 以 `/users/` 开头。"
+    },
+    {
+      "id": "http-s2-8",
+      "track": "http",
+      "no": 8,
+      "code": "const users = [{ id: 1 }, { id: 2 }];\nconst id = 1;\nconsole.log(users.filter((x) => x.id !== id).length);",
+      "out": "`1`",
+      "note": "filter 删掉 id=1 后剩 1 个。"
+    },
+    {
+      "id": "http-s2-9",
+      "track": "http",
+      "no": 9,
+      "code": "console.log(JSON.stringify({ error: 'Not Found' }));",
+      "out": "`{\"error\":\"Not Found\"}`",
+      "note": "JSON 错误响应的统一结构。"
+    },
+    {
+      "id": "http-s2-10",
+      "track": "http",
+      "no": 10,
+      "code": "const etag = '\"v1\"';\nconst ifNoneMatch = '\"v1\"';\nconsole.log(ifNoneMatch === etag ? 304 : 200);",
+      "out": "`304`",
+      "note": "If-None-Match 与 ETag 匹配 → 内容没变，回 304。"
+    },
+    {
+      "id": "http-s2-11",
+      "track": "http",
+      "no": 11,
+      "code": "console.log('sid=abc123; HttpOnly; Secure'.split(';').map((s) => s.trim()));",
+      "out": "`['sid=abc123','HttpOnly','Secure']`",
+      "note": "Set-Cookie 用 `;` 分隔多个属性。"
+    },
+    {
+      "id": "http-s2-12",
+      "track": "http",
+      "no": 12,
+      "code": "const statusCode = 204;\nconsole.log(statusCode === 204 ? '无 body' : '有 body');",
+      "out": "`无 body`",
+      "note": "204 No Content 不能有 body。"
+    },
+    {
+      "id": "http-s2-13",
+      "track": "http",
+      "no": 13,
+      "code": "// 一台机器的端口范围是 0~65535，客户端临时端口一般在哪个区间？\nconsole.log(49152 > 1024);",
+      "out": "`true`",
+      "note": "客户端临时端口在 49152~65535 动态区间。"
+    },
+    {
+      "id": "http-s2-14",
+      "track": "http",
+      "no": 14,
+      "code": "console.log('GET 幂等？', true, 'POST 幂等？', false);",
+      "out": "`GET 幂等？ true POST 幂等？ false`",
+      "note": "读幂等、写（POST）不幂等。"
+    },
+    {
+      "id": "http-s2-15",
+      "track": "http",
+      "no": 15,
+      "code": "const q = new URL('http://x.com/search?page=2&size=10');\nconsole.log(q.searchParams.get('page'), q.searchParams.get('size'));",
+      "out": "`2 10`",
+      "note": "`URL.searchParams.get` 解析 query string。"
+    },
+    {
+      "id": "http-s2-16",
+      "track": "http",
+      "no": 16,
+      "code": "console.log('hello'.length, Buffer.byteLength('你好'));",
+      "out": "`5 6`",
+      "note": "`length` 是字符数，`byteLength` 是字节数（中文 3 字节）。"
+    },
+    {
+      "id": "http-s2-17",
+      "track": "http",
+      "no": 17,
+      "code": "const httpMethods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD'];\nconsole.log(httpMethods.filter((m) => m !== 'POST').length);",
+      "out": "`5`",
+      "note": "6 个方法去掉 POST 剩 5 个。"
+    },
+    {
+      "id": "http-s2-18",
+      "track": "http",
+      "no": 18,
+      "code": "// 判断同源：协议 + 域名 + 端口 全相同才算同源\nconsole.log('https://a.com' === 'https://a.com:443' ? '注意端口默认值' : '严格不同');",
+      "out": "`严格不同`",
+      "note": "`a.com:443` 显式端口 ≠ `a.com`（无端口），字符串层面不同；但浏览器里 443 是 https 默认端口。"
+    },
+    {
+      "id": "http-s2-19",
+      "track": "http",
+      "no": 19,
+      "code": "console.log([404, 401, 403, 400].every((n) => n >= 400 && n < 500));",
+      "out": "`true`",
+      "note": "4xx 都在 400~499 区间，全是客户端错。"
+    },
+    {
+      "id": "http-s2-20",
+      "track": "http",
+      "no": 20,
+      "code": "console.log('ENOTFOUND'.includes('NOT'), 'ECONNREFUSED'.startsWith('ECONN'));",
+      "out": "`true true`",
+      "note": "`ENOTFOUND` 含 NOT；`ECONNREFUSED` 以 ECONN 开头。"
+    },
+    {
+      "id": "http-s2-21",
+      "track": "http",
+      "no": 21,
+      "code": "const ips = ['192.168.1.10', '192.168.2.10'];\nconsole.log(ips[0].split('.')[2] === ips[1].split('.')[2]);",
+      "out": "`false`",
+      "note": "第三段分别是 1 和 2，不同网段。"
+    },
+    {
+      "id": "http-s2-22",
+      "track": "http",
+      "no": 22,
+      "code": "// 协商缓存：服务器比对 If-None-Match 和 ETag\nconst serverETag = '\"v2\"';\nconst clientSends = '\"v1\"';\nconsole.log(clientSends === serverETag ? '304 没变' : '200 变了');",
+      "out": "`200 变了`",
+      "note": "客户端带的 v1 ≠ 服务器现在的 v2，内容变了回 200。"
+    },
+    {
+      "id": "http-s2-23",
+      "track": "http",
+      "no": 23,
+      "code": "console.log(typeof Buffer.from('x'), Buffer.from('x') instanceof Uint8Array);",
+      "out": "`object true`",
+      "note": "Buffer 是对象，且是 Uint8Array 的子类。"
+    },
+    {
+      "id": "http-s2-24",
+      "track": "http",
+      "no": 24,
+      "code": "const httpVersion = '1.1';\nconsole.log(httpVersion === '1.1' ? '文本报文' : '二进制帧');",
+      "out": "`文本报文`",
+      "note": "HTTP/1.1 是文本，HTTP/2 才是二进制帧。"
+    },
+    {
+      "id": "http-s2-25",
+      "track": "http",
+      "no": 25,
+      "code": "// 队头阻塞：HTTP/1.1 里 /fast 被 /slow 堵住，总耗时约等于二者之和\nconst slow = 500;\nconst fast = 10;\nconsole.log(slow + fast, 'ms（串行）');",
+      "out": "`510 ms（串行）`",
+      "note": "HTTP/1.1 队头阻塞：/fast 被 /slow 堵住，串行耗时相加。"
+    },
+    {
+      "id": "docker-s2-1",
+      "track": "docker",
+      "no": 1,
+      "code": "// 内容寻址：层的 digest 由内容算出，内容相同 digest 就相同\nconst sha = (s) => s.split('').reduce((h, c) => h + c.charCodeAt(0), 0);\nconsole.log(sha('echo hello') === sha('echo hello'));",
+      "out": "`true`",
+      "note": "内容寻址：内容相同，digest（哈希）相同，层可复用。"
+    },
+    {
+      "id": "docker-s2-2",
+      "track": "docker",
+      "no": 2,
+      "code": "// 分层覆盖：上层同名文件覆盖下层\nconst layers = [\n  { '/app/config': 'port=8080' },          // 底层\n  { '/app/config': 'port=3000' },          // 上层\n];\nconsole.log(layers[1]['/app/config']);",
+      "out": "`port=3000`",
+      "note": "分层覆盖：上层同名文件覆盖下层（UnionFS 语义）。"
+    },
+    {
+      "id": "docker-s2-3",
+      "track": "docker",
+      "no": 3,
+      "code": "// 容器状态机：created 能直接变 running 吗？\nconst can = { created: ['start'], running: ['stop'], exited: ['start', 'rm'] };\nconsole.log(can['created'].includes('start'));",
+      "out": "`true`",
+      "note": "状态机：created 可以 start 变 running。"
+    },
+    {
+      "id": "docker-s2-4",
+      "track": "docker",
+      "no": 4,
+      "code": "// 端口映射：-p 8080:80 哪个是宿主的？\nconst [host, container] = '8080:80'.split(':');\nconsole.log(host);",
+      "out": "`8080`",
+      "note": "`-p 宿主:容器`，左边是宿主机端口。"
+    },
+    {
+      "id": "docker-s2-5",
+      "track": "docker",
+      "no": 5,
+      "code": "// 镜像名解析：latest 是默认 tag 吗？\nconsole.log('nginx'.split(':').length);",
+      "out": "`1`",
+      "note": "`nginx` 没写 tag，用默认值 latest。"
+    },
+    {
+      "id": "docker-s2-6",
+      "track": "docker",
+      "no": 6,
+      "code": "// 内容寻址：改一个字符，digest 变不变？\nconst a = 'echo hello';\nconst b = 'echo HELLO';\nconsole.log(a === b);",
+      "out": "`false`",
+      "note": "内容一变，digest 就变（哪怕一个字符）。"
+    },
+    {
+      "id": "docker-s2-7",
+      "track": "docker",
+      "no": 7,
+      "code": "// docker ps 的过滤：不存在的状态会返回空吗？\nconst ps = (status) => ['running', 'exited'].filter((s) => s === status);\nconsole.log(ps('paused').length);",
+      "out": "`0`",
+      "note": "`docker ps` 只看 running；paused 需要专门查。"
+    },
+    {
+      "id": "docker-s2-8",
+      "track": "docker",
+      "no": 8,
+      "code": "// depends_on 拓扑排序：db 应该先启动\nconst deps = { web: ['db'], db: [] };\nconst order = [];\nconst visit = (n) => { deps[n].forEach(visit); if (!order.includes(n)) order.push(n); };\nvisit('web');\nconsole.log(order.join('->'));",
+      "out": "`db->web`",
+      "note": "depends_on 让 db 先启动（拓扑排序）。"
+    },
+    {
+      "id": "docker-s2-9",
+      "track": "docker",
+      "no": 9,
+      "code": "// 多阶段构建体积：单阶段 vs 多阶段\nconst single = 340 + 280 + 2;\nconst multi = 110 + 2 + 45;\nconsole.log(single > multi);",
+      "out": "`true`",
+      "note": "多阶段构建把构建工具链挡在最终镜像外，体积更小。"
+    },
+    {
+      "id": "docker-s2-10",
+      "track": "docker",
+      "no": 10,
+      "code": "// 退出码含义：137 是什么？\nconst SIGKILL = 137;\nconst SIGTERM = 143;\nconsole.log(SIGKILL > SIGTERM);",
+      "out": "`true`",
+      "note": "137（SIGKILL）> 143（SIGTERM），都是退出码。"
+    },
+    {
+      "id": "docker-s2-11",
+      "track": "docker",
+      "no": 11,
+      "code": "// COPY 尾斜杠语义：src 和 src/ 一样吗？\nconst copy = (src) => src.endsWith('/') ? '内容' : '目录本身';\nconsole.log(copy('src/'), copy('src'));",
+      "out": "`内容 目录本身`",
+      "note": "`src/` 复制内容，`src` 复制目录本身。"
+    },
+    {
+      "id": "docker-s2-12",
+      "track": "docker",
+      "no": 12,
+      "code": "// 卷的生命周期：删容器后数据还在吗？\nconst data = { container: null, volume: 'pgdata' };\nconst afterRm = data.volume;\nconsole.log(afterRm);",
+      "out": "`pgdata`",
+      "note": "卷独立于容器，删容器后卷（数据）还在。"
+    },
+    {
+      "id": "docker-s2-13",
+      "track": "docker",
+      "no": 13,
+      "code": "// 缓存失效：COPY . . 变了，后面会怎样？\nconst cache = ['FROM', 'COPY package.json', 'RUN install', 'COPY . .'];\nconsole.log(cache.indexOf('COPY . .'));",
+      "out": "`3`",
+      "note": "`COPY . .` 是第 4 条（下标 3），它一变后面全重建。"
+    },
+    {
+      "id": "docker-s2-14",
+      "track": "docker",
+      "no": 14,
+      "code": "// 层合并：多条 RUN 和一条 RUN 的层数\nconst layersOf = (runs) => runs.length;\nconsole.log(layersOf(['apt-get update', 'apt-get install']) > layersOf(['update && install']));",
+      "out": "`true`",
+      "note": "多条 RUN 比合并成一条的层数多。"
+    },
+    {
+      "id": "docker-s2-15",
+      "track": "docker",
+      "no": 15,
+      "code": "// 健康检查：连续失败几次算不健康\nconst health = { retries: 5, fails: 3 };\nconsole.log(health.fails >= health.retries ? 'unhealthy' : 'checking');",
+      "out": "`checking`",
+      "note": "失败 3 次 < retries 5，还没到 unhealthy。"
+    },
+    {
+      "id": "docker-s2-16",
+      "track": "docker",
+      "no": 16,
+      "code": "// digest 引用：镜像 ID 是摘要的前多少位\nconsole.log('6139a7d6b26f'.length);",
+      "out": "`12`",
+      "note": "镜像 ID 是 sha256 摘要的前 12 位。"
+    },
+    {
+      "id": "docker-s2-17",
+      "track": "docker",
+      "no": 17,
+      "code": "// DNS 解析：容器名解析成什么\nconst dns = { db: '172.18.0.2' };\nconsole.log(dns['db']);",
+      "out": "`172.18.0.2`",
+      "note": "容器名靠内置 DNS 解析成 IP。"
+    },
+    {
+      "id": "docker-s2-18",
+      "track": "docker",
+      "no": 18,
+      "code": "// EXPOSE vs -p：哪个真正开放端口\nconst expose = { 开放端口: false };\nconst publish = { 开放端口: true };\nconsole.log(expose.开放端口, publish.开放端口);",
+      "out": "`false true`",
+      "note": "EXPOSE 只是声明，-p 才真正开放端口。"
+    },
+    {
+      "id": "docker-s2-19",
+      "track": "docker",
+      "no": 19,
+      "code": "// compose 卷名：会加项目前缀\nconst volumeName = (project, name) => `${project}_${name}`;\nconsole.log(volumeName('myapp', 'pgdata'));",
+      "out": "`myapp_pgdata`",
+      "note": "compose 卷名会加项目前缀。"
+    },
+    {
+      "id": "docker-s2-20",
+      "track": "docker",
+      "no": 20,
+      "code": "// restart 策略：unless-stopped 手动 stop 后会不会重启\nconst unlessStopped = { 手动stop后重启: false };\nconsole.log(unlessStopped.手动stop后重启);",
+      "out": "`false`",
+      "note": "unless-stopped 尊重手动 stop，不会自动重启。"
+    },
+    {
+      "id": "docker-s2-21",
+      "track": "docker",
+      "no": 21,
+      "code": "// .dockerignore 效果：上下文变小\nconst withIgnore = 2.1;\nconst without = 523.5;\nconsole.log(without > withIgnore);",
+      "out": "`true`",
+      "note": "有 .dockerignore 时上下文从几百 MB 降到几 MB。"
+    },
+    {
+      "id": "docker-s2-22",
+      "track": "docker",
+      "no": 22,
+      "code": "// alpine vs 完整版：体积差一个数量级\nconst alpine = 132;\nconst full = 1000;\nconsole.log(full / alpine > 5);",
+      "out": "`true`",
+      "note": "完整版比 alpine 大一个数量级（>5 倍）。"
+    },
+    {
+      "id": "docker-s2-23",
+      "track": "docker",
+      "no": 23,
+      "code": "// 容器名冲突：同名会怎样\nconst names = new Set(['web']);\nconst add = (n) => names.has(n) ? 'Conflict' : (names.add(n), 'ok');\nconsole.log(add('web'));",
+      "out": "`Conflict`",
+      "note": "容器名重复会报 Conflict。"
+    },
+    {
+      "id": "docker-s2-24",
+      "track": "docker",
+      "no": 24,
+      "code": "// docker exec vs run：exec 进的是现有容器\nconst existing = { name: 'web', running: true };\nconst exec = (c) => c.running ? '进入现有容器' : '报错';\nconsole.log(exec(existing));",
+      "out": "`进入现有容器`",
+      "note": "`exec` 进运行中的现有容器，`run` 才是新建。"
+    },
+    {
+      "id": "docker-s2-25",
+      "track": "docker",
+      "no": 25,
+      "code": "// 完整流程：容器化闭环的第一步\nconst steps = ['写代码', '写Dockerfile', 'build', 'run验证', 'compose', 'up'];\nconsole.log(steps[0]);",
+      "out": "`写代码`",
+      "note": "容器化闭环第一步：先写代码并让裸机能跑。"
+    }
+  ],
+  "interview": [
+    {
+      "id": "git-iv-1-0",
+      "track": "git",
+      "no": 1,
+      "q": "`git commit` 保存的是差异还是快照？",
+      "a": "**答：快照。每个 commit 记录的是整个仓库在那一刻的完整目录树（通过 tree/blob 对象的哈希引用），不是\"这次改了哪些行\"。**\n\n- 关键区分：**快照**（存整个状态） ≠ **差异**（只存改动）\n- 推论：没变的文件内容哈希不变，Git 不用重存；改一个文件只新增一个 blob，其余引用旧 blob"
+    },
+    {
+      "id": "git-iv-2-1",
+      "track": "git",
+      "no": 2,
+      "q": "Git 里的对象有哪几种？",
+      "a": "**答：四种。blob（文件内容）、tree（目录清单）、commit（提交）、tag（标签）。**\n\n- blob 存一个文件的完整内容\n- tree 存\"文件名 → blob/tree 哈希\"的映射\n- commit 存 tree + 父 commit + 作者/提交者/说明\n- 每个对象的名字是它内容的 SHA-1 哈希"
+    },
+    {
+      "id": "git-iv-3-2",
+      "track": "git",
+      "no": 3,
+      "q": "什么是\"内容寻址\"？有什么好处？",
+      "a": "**答：对象的名字就是它内容的哈希。好处有三：相同内容自动去重（只存一份）；内容被篡改一字节哈希就对不上（天然校验）；commit 的哈希一变，说明它引用的东西一定被动过。**"
+    },
+    {
+      "id": "git-iv-4-3",
+      "track": "git",
+      "no": 4,
+      "q": "为什么 Git 用快照而不是差异？",
+      "a": "**答：差异存储（SVN 思路）要还原某个版本，得从第一个版本一路打补丁，越到后面越慢。快照存储直接取那一张\"照片\"即可，还原是 O(1)。代价是空间略贵（但内容寻址 + 压缩弥补了）。**\n\n- 这是 Linus 为 Linux 内核那种\"几万文件、几十万提交\"的项目做的取舍"
+    },
+    {
+      "id": "git-iv-5-4",
+      "track": "git",
+      "no": 5,
+      "q": "blob 哈希是怎么算出来的？",
+      "a": "**答：`sha1(\"blob \" + 字节长度 + \"\\0\" + 文件内容)`。头部是 `blob ` + 内容的字节数 + 一个空字符。**\n\n- 注意是**字节数**，不是字符数（中文要按 UTF-8 字节算）"
+    },
+    {
+      "id": "git-iv-6-5",
+      "track": "git",
+      "no": 6,
+      "q": "两个文件内容相同，Git 存几个 blob？",
+      "a": "**答：一个。内容寻址意味着同样的内容哈希一样，底层只存一份，两个文件名只是两个 tree 条目引用同一个 blob。**"
+    },
+    {
+      "id": "git-iv-7-6",
+      "track": "git",
+      "no": 7,
+      "q": "commit 的 `parent` 字段是干什么的？",
+      "a": "**答：指向父 commit 的哈希，把提交串成一条单向链表。普通提交一个 parent，merge 提交两个，第一个提交（root）零个。**\n\n- 这个设计让 commit 不可变：改中间一个，后面所有哈希都变"
+    },
+    {
+      "id": "git-iv-8-7",
+      "track": "git",
+      "no": 8,
+      "q": "author 和 committer 有什么区别？",
+      "a": "**答：author 是\"写这段代码的人\"，committer 是\"执行提交的人\"。正常情况两者相同；`cherry-pick`/`rebase`/`amend` 时会不同——author 保留原作者，committer 变成操作者。**"
+    },
+    {
+      "id": "git-iv-9-8",
+      "track": "git",
+      "no": 9,
+      "q": "Git 是怎么保证历史几乎不可能\"静默损坏\"的？",
+      "a": "**答：因为 commit 的名字就是内容哈希。任何对象被篡改一字节，它的哈希就变了，上层引用它的 tree/commit 哈希也对不上，`git fsck` 一查就能发现哈希网\"断了\"。**"
+    },
+    {
+      "id": "git-iv-10-9",
+      "track": "git",
+      "no": 10,
+      "q": "`git cat-file -p <hash>` 和 `git hash-object <file>` 是干什么的？",
+      "a": "**答：`cat-file -p` 查看某个对象的\"漂亮格式\"内容（blob 显示文本、tree 显示清单、commit 显示元信息）；`hash-object` 计算某个文件对应的 blob 哈希（不加 `-w` 就只算不写）。**"
+    },
+    {
+      "id": "git-iv-11-10",
+      "track": "git",
+      "no": 11,
+      "q": "工作区、暂存区、版本库分别在哪？",
+      "a": "**答：工作区 = 你的项目文件夹；暂存区 = `.git/index`（一个二进制文件）；版本库 = `.git/objects` + `.git/refs`。**"
+    },
+    {
+      "id": "git-iv-12-11",
+      "track": "git",
+      "no": 12,
+      "q": "为什么要设计一个\"暂存区\"？",
+      "a": "**答：让你精确控制\"这次提交什么\"。工作区可能同时有 bug 修复、半成品功能、随手改的配置，暂存区让你只把想提交的挑进去，提交语义清晰。**"
+    },
+    {
+      "id": "git-iv-13-12",
+      "track": "git",
+      "no": 13,
+      "q": "`git add` 和 `git commit` 各自做了什么？",
+      "a": "**答：`add` 把文件当前内容拍快照进暂存区；`commit` 把暂存区固化成历史里的一个快照节点。commit 只认暂存区，不认工作区。**"
+    },
+    {
+      "id": "git-iv-14-13",
+      "track": "git",
+      "no": 14,
+      "q": "`git status -s` 里 `??`、`M `、` M`、`AM` 分别是什么意思？",
+      "a": "**答：`??` 未跟踪；`M `（第一列 M）已修改且已暂存；` M`（第二列 M）已修改未暂存；`AM` 已暂存后又改了（暂存区 A + 工作区 M）。两列分别对应暂存区和工作区。**"
+    },
+    {
+      "id": "git-iv-15-14",
+      "track": "git",
+      "no": 15,
+      "q": "`git diff`、`git diff --staged`、`git diff HEAD` 各比什么？",
+      "a": "**答：`git diff` 比工作区 vs 暂存区；`--staged` 比暂存区 vs 最新 commit；`HEAD` 比工作区 vs 最新 commit。**"
+    },
+    {
+      "id": "git-iv-16-15",
+      "track": "git",
+      "no": 16,
+      "q": "未跟踪的新文件，`git diff` 能显示吗？",
+      "a": "**答：不能。`git diff` 只在\"已跟踪\"文件之间比较，未跟踪文件对 Git 来说还不存在。要 `git add` 之后才能 diff。**"
+    },
+    {
+      "id": "git-iv-17-16",
+      "track": "git",
+      "no": 17,
+      "q": "`git log --oneline`、`--graph`、`--author` 分别干什么？",
+      "a": "**答：`--oneline` 一行一条；`--graph` 画分支图；`--author=\"名字\"` 过滤某人的提交。另有 `--since`、`--grep`、`-- 路径` 等过滤。**"
+    },
+    {
+      "id": "git-iv-18-17",
+      "track": "git",
+      "no": 18,
+      "q": "`HEAD~1` 和 `HEAD^` 有什么区别？",
+      "a": "**答：`~1` 沿\"第一个 parent\"往回走 1 步；`^` 也表示第一个 parent（`HEAD^1` 同义）。对 merge commit，`HEAD^2` 表示\"第二个 parent\"（被合并的那条线），而 `HEAD~2` 表示\"往回两步\"（`HEAD^1^1`）。**"
+    },
+    {
+      "id": "git-iv-19-18",
+      "track": "git",
+      "no": 19,
+      "q": "提交信息为什么要有规范？",
+      "a": "**答：提交信息是给\"未来的自己和同事\"看的，机器可读的规范（Conventional Commits：`type(scope): subject`）能自动生成 changelog、自动定版本号、一键搜索某类改动。**"
+    },
+    {
+      "id": "git-iv-20-19",
+      "track": "git",
+      "no": 20,
+      "q": "`feat` 和 `fix` 有什么区别？",
+      "a": "**答：`feat` 是\"加了新功能\"，`fix` 是\"修了坏的东西\"。两者直接影响语义化版本号的升降（feat 升 minor，fix 升 patch）。**"
+    },
+    {
+      "id": "git-iv-21-20",
+      "track": "git",
+      "no": 21,
+      "q": "分支是什么？为什么 Git 的分支特别便宜？",
+      "a": "**答：分支只是一个指向 commit 的指针（`.git/refs/heads/` 下的哈希文件）。创建 = 写一行字，耗时几乎为零，所以\"为每个想法开分支\"是划算的。**"
+    },
+    {
+      "id": "git-iv-22-21",
+      "track": "git",
+      "no": 22,
+      "q": "HEAD 是什么？detached HEAD 是什么？",
+      "a": "**答：HEAD 是\"你站在哪\"的指针，通常指向某个分支。detached HEAD 是 HEAD 直接指向某个 commit 而非分支——此时能看能改，但提交不挂靠任何分支，切走就\"悬空\"。**"
+    },
+    {
+      "id": "git-iv-23-22",
+      "track": "git",
+      "no": 23,
+      "q": "快进合并（fast-forward）和三方合并的区别？",
+      "a": "**答：快进 = 分叉后当前分支没动，直接把指针平移，不产生新 commit；三方 = 两边都动了，以共同祖先为基准合成一个有两个 parent 的 merge commit。**"
+    },
+    {
+      "id": "git-iv-24-23",
+      "track": "git",
+      "no": 24,
+      "q": "`git merge --no-ff` 有什么用？",
+      "a": "**答：即使能快进，也强制生成一个 merge commit。用于想保留\"这里合并过一条分支\"的痕迹的团队规范。**"
+    },
+    {
+      "id": "git-iv-25-24",
+      "track": "git",
+      "no": 25,
+      "q": "冲突是怎么产生的？",
+      "a": "**答：只有\"两边改了同一个文件的同一块地方\"才冲突——Git 无法自动裁决，把两个版本都写进文件、用冲突标记分隔，交给你拍板。**"
+    },
+    {
+      "id": "git-iv-26-25",
+      "track": "git",
+      "no": 26,
+      "q": "冲突标记 `<<<<<<<`、`=======`、`>>>>>>>` 各代表什么？",
+      "a": "**答：`<<<<<<< HEAD` 到 `=======` 是当前分支（HEAD）的版本；`=======` 到 `>>>>>>> 分支名` 是被合并分支的版本。**"
+    },
+    {
+      "id": "git-iv-27-26",
+      "track": "git",
+      "no": 27,
+      "q": "解决冲突有哪几种方式？",
+      "a": "**答：三种——手动编辑后 `git add`（最常用）、`--ours`/`--theirs` 整取一边、`--abort` 中止合并。解决完的标志是 `git add`（标记已解决）。**"
+    },
+    {
+      "id": "git-iv-28-27",
+      "track": "git",
+      "no": 28,
+      "q": "冲突时报错原文是什么？",
+      "a": "**答：`CONFLICT (content): Merge conflict in <文件>` + `Automatic merge failed; fix conflicts and then commit the result.`**"
+    },
+    {
+      "id": "git-iv-29-28",
+      "track": "git",
+      "no": 29,
+      "q": "冲突文件在 index 里有几个阶段？",
+      "a": "**答：三个。阶段 1 = 共同祖先（base），阶段 2 = 当前分支（ours），阶段 3 = 被合并分支（theirs）。解决后合并回阶段 0。**"
+    },
+    {
+      "id": "git-iv-30-29",
+      "track": "git",
+      "no": 30,
+      "q": "为什么说\"合并方向永远是功能分支 → main\"？",
+      "a": "**答：让 main 保持可发布状态。功能开发都在分支上做，main 只接受\"已完成、测试过\"的合并，历史清晰、随时能发布。**"
+    },
+    {
+      "id": "git-iv-31-30",
+      "track": "git",
+      "no": 31,
+      "q": "`git reset --soft / --mixed / --hard` 的区别？",
+      "a": "**答：`--soft` 只挪 HEAD；`--mixed`（默认）挪 HEAD + 清空暂存区；`--hard` 连工作区一起覆盖。记忆：soft 挪指针、mixed 清暂存、hard 砸工作区。**"
+    },
+    {
+      "id": "git-iv-32-31",
+      "track": "git",
+      "no": 32,
+      "q": "`--hard` 为什么危险？",
+      "a": "**答：它会覆盖工作区，把**所有未提交改动**一并抹掉，且无法通过普通方式找回（只能靠 reflog）。**"
+    },
+    {
+      "id": "git-iv-33-32",
+      "track": "git",
+      "no": 33,
+      "q": "`git reset` 和 `git revert` 的区别？",
+      "a": "**答：`reset` 把历史往后挪（改写历史），`revert` 追加一个\"反向提交\"（不改历史）。未推送的用 reset，已推送的用 revert。**"
+    },
+    {
+      "id": "git-iv-34-33",
+      "track": "git",
+      "no": 34,
+      "q": "为什么已推送的提交不能用 `git reset`？",
+      "a": "**答：已推送的历史是共享的。reset 改写本地历史后，需要 `push --force` 覆盖远程，会破坏同事已经 pull 的历史，导致混乱甚至丢提交。**"
+    },
+    {
+      "id": "git-iv-35-34",
+      "track": "git",
+      "no": 35,
+      "q": "`git restore` 和 `git checkout --` 什么关系？",
+      "a": "**答：等价。`restore` 是 Git 2.23 起的新命令，专职\"恢复文件\"，取代了身兼两职的 `checkout --`。新代码用 `restore`。**"
+    },
+    {
+      "id": "git-iv-36-35",
+      "track": "git",
+      "no": 36,
+      "q": "`git restore --staged <file>` 是干什么的？",
+      "a": "**答：把已暂存（add）的改动退回工作区，即\"取消 add\"，但不删除内容。**"
+    },
+    {
+      "id": "git-iv-37-36",
+      "track": "git",
+      "no": 37,
+      "q": "`git reflog` 是干什么的？",
+      "a": "**答：记录 HEAD 的每次移动（commit/reset/rebase/checkout），是\"后悔药的后悔药\"——被 reset 掉的提交也能在 reflog 里找到哈希找回。**"
+    },
+    {
+      "id": "git-iv-38-37",
+      "track": "git",
+      "no": 38,
+      "q": "`git log` 和 `git reflog` 的区别？",
+      "a": "**答：`log` 沿 parent 链看项目历史（被 reset 掉的看不到）；`reflog` 看 HEAD 的移动轨迹（被 reset 掉的也看得到）。前者是\"项目历史\"，后者是\"操作历史\"。**"
+    },
+    {
+      "id": "git-iv-39-38",
+      "track": "git",
+      "no": 39,
+      "q": "reflog 会永久保存吗？",
+      "a": "**答：不会。默认保留 90 天（可配 `gc.reflogExpire`）。超过期限且对象被 GC 回收，就真的找不回了。**"
+    },
+    {
+      "id": "git-iv-40-39",
+      "track": "git",
+      "no": 40,
+      "q": "`git commit --amend` 是干什么的？有什么坑？",
+      "a": "**答：修改**上一次**提交（改说明、或补上漏掉的文件）。坑：它会改写最后一个 commit 的哈希，所以**只对\"还没 push 的最后一个提交\"用**。**"
+    },
+    {
+      "id": "git-iv-41-40",
+      "track": "git",
+      "no": 41,
+      "q": "`origin` 是什么？",
+      "a": "**答：是\"远程仓库 URL\"的别名，默认第一个远程叫这个名字。`git remote add origin <url>` 就是在 `.git/config` 里记下这个映射。一个仓库可以有多个远程（origin/upstream）。**"
+    },
+    {
+      "id": "git-iv-42-41",
+      "track": "git",
+      "no": 42,
+      "q": "`origin/master` 是什么？",
+      "a": "**答：远程 master 在本地的一份快照，存在 `refs/remotes/origin/master`，只在 `fetch`/`push` 时更新。它不是实时同步的。**"
+    },
+    {
+      "id": "git-iv-43-42",
+      "track": "git",
+      "no": 43,
+      "q": "`git fetch` 和 `git pull` 的区别？",
+      "a": "**答：`fetch` 只下载远程最新、更新 `origin/master` 影子，不碰工作区；`pull` = fetch + merge，下载并合并进本地分支。**"
+    },
+    {
+      "id": "git-iv-44-43",
+      "track": "git",
+      "no": 44,
+      "q": "为什么说\"先 fetch 再 merge\"比\"直接 pull\"更可控？",
+      "a": "**答：fetch 只更新影子，你可以先 `git log HEAD..origin/master` 看远程多了什么、`git diff` 看改了什么，想清楚了再决定怎么合并。pull 一步到位但不透明。**"
+    },
+    {
+      "id": "git-iv-45-44",
+      "track": "git",
+      "no": 45,
+      "q": "push 被 rejected 是什么意思？",
+      "a": "**答：`! [rejected] ... (fetch first)` 表示远程有你本地没有的提交（远程领先）。先 `git pull` 合并再 push。**"
+    },
+    {
+      "id": "git-iv-46-45",
+      "track": "git",
+      "no": 46,
+      "q": "为什么 push 被拒时不能 `--force`？",
+      "a": "**答：`--force` 会覆盖远程历史，把同事已经 push 的提交冲掉。更温和的替代是 `--force-with-lease`（先检查远程有没有新提交）。**"
+    },
+    {
+      "id": "git-iv-47-46",
+      "track": "git",
+      "no": 47,
+      "q": "`git pull` 时分叉报什么错？",
+      "a": "**答：`fatal: Need to specify how to reconcile divergent branches.` 表示本地和远程都各有新提交，Git 不知道用 merge 还是 rebase。解法是 `git config pull.rebase false/true/only` 三选一。**"
+    },
+    {
+      "id": "git-iv-48-47",
+      "track": "git",
+      "no": 48,
+      "q": "rebase 和 merge 怎么选？",
+      "a": "**答：merge 保留真实分叉历史、不改写，适合公共分支；rebase 让历史变直线、会改写 commit，只适合未推送的私有分支。黄金法则：绝不 rebase 共享分支。**"
+    },
+    {
+      "id": "git-iv-49-48",
+      "track": "git",
+      "no": 49,
+      "q": "为什么 rebase 会改写 commit？",
+      "a": "**答：rebase 把\"分叉后的提交\"逐个重放到新基底上，parent 变了，而 parent 是 commit 内容的一部分，所以哈希必然变。**"
+    },
+    {
+      "id": "git-iv-50-49",
+      "track": "git",
+      "no": 50,
+      "q": "cherry-pick 是干什么的？和 merge 有什么区别？",
+      "a": "**答：cherry-pick 挑**一个**提交的改动复制到当前分支（保留原 author）；merge 整合**整条**分支的所有提交。**\n\n---\n\n## 二、白板手写题（Q51~Q60）\n\n面试官说\"来，现场写/操作一下\"的时候，**先讲思路再动手**——这是第一分。命令写了 80% 也比卡住强。"
+    },
+    {
+      "id": "git-iv-54-50",
+      "track": "git",
+      "no": 54,
+      "q": "你 push 了 3 个提交，发现中间那个有 bug。怎么安全地撤销它？",
+      "a": "**答：** 用 `git revert <中间提交的哈希>`，然后 `git push`。因为已经推送，不能 reset（会改写共享历史）。revert 会新增一个\"反向提交\"，把 bug 提交的改动抵消掉。"
+    },
+    {
+      "id": "git-iv-55-51",
+      "track": "git",
+      "no": 55,
+      "q": "你在 feature 分支上开发，main 已经往前走了很多。想合并前让历史保持直线，怎么做？",
+      "a": "**答：** 在 feature 上 `git rebase main`，把 feature 的提交重放到 main 顶端，再 `git switch main && git merge feature`（此时是快进合并，历史直线）。**前提：feature 没推送过。**"
+    },
+    {
+      "id": "git-iv-56-52",
+      "track": "git",
+      "no": 56,
+      "q": "手滑执行了 `git reset --hard HEAD~3`，怎么找回丢掉的提交？",
+      "a": "**答：** `git reflog` 找到 reset 之前 HEAD 的位置（哈希），然后 `git reset --hard <那个哈希>` 或 `git switch -c recovered <哈希>` 建分支查看。"
+    },
+    {
+      "id": "git-iv-57-53",
+      "track": "git",
+      "no": 57,
+      "q": "一个文件已经被提交过了，现在想忽略它但保留本地文件，怎么做？",
+      "a": "**答：**\n\n```bash\necho \"文件名\" >> .gitignore\ngit rm --cached 文件名\ngit commit -m \"chore: 停止跟踪 xxx\"\n```\n\n`git rm --cached` 从版本库移除但保留本地文件，之后 `.gitignore` 才生效。"
+    },
+    {
+      "id": "http-iv-1-0",
+      "track": "http",
+      "no": 1,
+      "q": "从浏览器输入 URL 到页面显示，中间发生了什么？",
+      "a": "**答：** ① DNS 把域名解析成 IP；② TCP 三次握手建立连接（HTTPS 还有 TLS 握手）；③ 发 HTTP 请求；④ 服务器处理返回响应；⑤ 浏览器渲染页面；⑥ 连接可能四次挥手关闭。这是一条\"分层递进\"的完整链路。\n\n- 关键区分：**DNS（找机器）→ TCP（建连接）→ HTTP（发请求）→ 渲染**\n- 加分项：能说出 HTTPS 还要多一步 TLS 握手"
+    },
+    {
+      "id": "http-iv-2-1",
+      "track": "http",
+      "no": 2,
+      "q": "TCP 三次握手为什么是三次，不是两次或四次？",
+      "a": "**答：** 三次恰好让双方都确认\"我的发送 + 你的接收\"正常，同时避免失效连接请求浪费资源。两次的话服务器无法确认客户端收到自己的 SYN+ACK；四次没必要，因为第二次把 ACK 和 SYN 合并成了 SYN+ACK。\n\n- 一句话：**三次 = 交换初始序列号 + 双向确认的最小次数**\n- 加分项：说出\"合并 ACK/SYN\""
+    },
+    {
+      "id": "http-iv-3-2",
+      "track": "http",
+      "no": 3,
+      "q": "TCP 是怎么保证可靠传输的？",
+      "a": "**答：** 靠四件套：① 序列号（按字节编号）② 确认号（期待的下一个字节）③ 重传（超时重传 + 3 个重复 ack 触发快速重传）④ 校验和（损坏则丢，当丢包处理）。分别对应\"不丢、不乱、不重、不损坏\"。\n\n- 关键区分：**丢包靠超时/重复 ack，乱序靠序号排序，重复靠序号去重**\n- 加分项：说出\"累积确认\"（ack=N 表示 N 之前全收到）"
+    },
+    {
+      "id": "http-iv-4-3",
+      "track": "http",
+      "no": 4,
+      "q": "什么是队头阻塞？HTTP/2 和 HTTP/3 怎么解决？",
+      "a": "**答：** 队头阻塞 = 前面一个慢的堵住后面所有。HTTP/1.1 是应用层队头阻塞（一条连接请求排队）；HTTP/2 用多路复用（帧 + 流 ID）解决应用层；但还跑在 TCP 上，TCP 层队头阻塞（一个包丢卡所有流）还在；HTTP/3 换 QUIC（基于 UDP），流独立，才根治。\n\n- 关键区分：**应用层队头阻塞 vs 传输层队头阻塞，是两层不同的病**\n- 加分项：说出\"HTTP/3 为什么选 UDP——TCP 在内核，改不动\""
+    },
+    {
+      "id": "http-iv-5-4",
+      "track": "http",
+      "no": 5,
+      "q": "TCP 和 UDP 的区别？各自适合什么场景？",
+      "a": "**答：** TCP 面向连接（三次握手）、可靠（序列号+重传）、有序、慢；UDP 无连接、不可靠、无顺序保证、快。TCP 适合要求可靠的场景（HTTP、文件、邮件），UDP 适合要求快的场景（实时音视频、游戏、DNS）。QUIC 是在 UDP 上自己实现可靠。\n\n- 一句话：**TCP 可靠慢，UDP 快不可靠，QUIC 在 UDP 上补可靠**\n- 加分项：说出\"可靠是有代价的（握手延迟、队头阻塞）\""
+    },
+    {
+      "id": "http-iv-6-5",
+      "track": "http",
+      "no": 6,
+      "q": "四次挥手为什么是四次？什么是半关闭？",
+      "a": "**答：** TCP 是双向的，两个方向要各自独立关闭，所以四次。半关闭是\"一方发了 FIN（我不再发），但还能收对方数据\"的状态——`end` 事件和 `close` 事件之间就是半关闭。\n\n- 关键区分：**`end()` 发 FIN，`close` 才是彻底断**\n- 加分项：说出\"第 2、3 步不能合并是因为服务器可能还有数据要发\""
+    },
+    {
+      "id": "http-iv-7-6",
+      "track": "http",
+      "no": 7,
+      "q": "一个 TCP 连接由什么唯一确定？端口的作用是什么？",
+      "a": "**答：** 由四元组 `（源IP，源端口，目标IP，目标端口）` 唯一确定。端口是\"程序的门牌号\"，把连接精确到机器上的某个程序。服务器端口公开固定，客户端端口内核随机分。\n\n- 关键区分：**IP 定位机器，端口定位程序**\n- 加分项：说出客户端也要端口（服务器才知道回给谁）"
+    },
+    {
+      "id": "http-iv-8-7",
+      "track": "http",
+      "no": 8,
+      "q": "什么是流量控制和拥塞控制？有什么区别？",
+      "a": "**答：** 流量控制照顾**接收方**（接收方窗口太小，发送方减速），靠滑动窗口实现；拥塞控制照顾**整个网络**（路由器堵了，大家都减速），靠慢启动 + 拥塞避免 + 快速恢复实现。\n\n- 一句话：**流量控制 = 别冲垮接收方，拥塞控制 = 别冲垮网络**\n- 加分项：说出\"慢启动指数增长，一丢包窗口砍半\""
+    },
+    {
+      "id": "http-iv-9-8",
+      "track": "http",
+      "no": 9,
+      "q": "为什么说 TCP 是\"字节流\"，没有\"消息边界\"？",
+      "a": "**答：** TCP 只保证字节**有序、完整**，不保证\"你 write 几次，对方 data 几次\"。3 次 write 可能被对方 1 次 data 读走，也可能分 3 次。要传\"一条条消息\"，必须自己在应用层定界（`\\n` 分隔或长度前缀）。\n\n- 关键区分：**TCP 保证字节序，不保证消息边界**\n- 加分项：举出\"聊天消息要自己加分隔符\"的例子"
+    },
+    {
+      "id": "http-iv-10-9",
+      "track": "http",
+      "no": 10,
+      "q": "`ECONNREFUSED` 和 `ECONNRESET` 有什么区别？",
+      "a": "**答：** `ECONNREFUSED` 是\"连接被拒绝\"——端口没人监听（门都没开）；`ECONNRESET` 是\"连接被重置\"——连接建立后对端崩了或主动发 RST（聊到一半摔电话）。\n\n- 一句话：**REFUSED 是门没开，RESET 是聊到一半摔电话**\n- 加分项：说出优雅关闭 `end()`（FIN）vs 暴力关闭 `destroy()`（RST）"
+    },
+    {
+      "id": "http-iv-11-10",
+      "track": "http",
+      "no": 11,
+      "q": "公网 IP 和内网 IP 的区别？为什么别人连不进你的本地服务？",
+      "a": "**答：** 公网 IP 全球唯一，内网 IP 局域网内唯一、可重复（`192.168.x.x` 等）。你本机通常只有内网 IP，外网访问不到；而且你访问外网时靠路由器 NAT 把内网 IP 换成公网 IP。所以要对外提供服务，需要公网 IP 或端口映射/内网穿透。\n\n- 关键区分：**内网 IP 出不了公网，NAT 让几十台设备共享一个公网 IP**\n- 加分项：说出\"`127.0.0.1` 是回环，只能本机访问\""
+    },
+    {
+      "id": "http-iv-12-11",
+      "track": "http",
+      "no": 12,
+      "q": "子网掩码是干什么的？怎么判断两台机器是否同一网段？",
+      "a": "**答：** 子网掩码把 IP 切成\"网络号 + 主机号\"。判断是否同一网段：IP 与掩码按位与得到网络地址，两个网络地址相同就是同一网段，可直连；不同则要经路由器。\n\n- 关键区分：**同一网段直连，跨网段过路由器**\n- 加分项：能算出 `192.168.1.10/24` 的网络地址是 `192.168.1.0`"
+    },
+    {
+      "id": "http-iv-13-12",
+      "track": "http",
+      "no": 13,
+      "q": "DNS 是怎么把域名解析成 IP 的？",
+      "a": "**答：** DNS 是分层结构（根 → 顶级域 → 二级域 → 子域），从右往左逐级查询；加上各级缓存所以快。本机还有 hosts 文件，优先级高于 DNS。\n\n- 关键区分：**分层 + 缓存，hosts 优先级最高**\n- 加分项：说出 A 记录查 IPv4、AAAA 查 IPv6、CNAME 是别名"
+    },
+    {
+      "id": "http-iv-14-13",
+      "track": "http",
+      "no": 14,
+      "q": "`dns.lookup` 和 `dns.resolve4` 有什么区别？",
+      "a": "**答：** `dns.lookup` 走系统解析（先 hosts 再 DNS）；`dns.resolve4` 跳过 hosts 直接问 DNS。改了 hosts 不生效，往往是因为代码用了 `resolve4`。\n\n- 关键区分：**lookup 走 hosts，resolve4 不走**\n- 加分项：说出\"改 hosts 不生效先查代码用哪个\""
+    },
+    {
+      "id": "http-iv-15-14",
+      "track": "http",
+      "no": 15,
+      "q": "什么是默认网关？它的作用是什么？",
+      "a": "**答：** 默认网关（通常是你家路由器）是你机器出网的第一跳。访问本网段之外的目标，数据先发给默认网关，由它转发。排障时按\"自己→网关→公网 IP→域名\"顺序 ping，能定位问题出在哪一层。\n\n- 关键区分：**本网段直连，跨网段交给网关**\n- 加分项：说出\"网关同时是 DHCP 服务器和 NAT 设备\""
+    },
+    {
+      "id": "http-iv-16-15",
+      "track": "http",
+      "no": 16,
+      "q": "为什么 IPv4 不够用，还要有 IPv6？",
+      "a": "**答：** IPv4 只有 32 位（约 43 亿地址），早用光了。IPv6 用 128 位，地址多到用不完。IPv6 还带来更好的 NAT 体验（每台设备能有公网 IP）、更简洁的头部。过渡难所以现在还是 IPv4 为主。\n\n- 关键区分：**43 亿 vs 2¹²⁸，量级差**\n- 加分项：说出 `::1` 是 IPv6 回环地址"
+    },
+    {
+      "id": "http-iv-17-16",
+      "track": "http",
+      "no": 17,
+      "q": "HTTP 请求报文和响应报文各由哪几部分组成？",
+      "a": "**答：** 请求报文 = 请求行（方法+路径+版本）+ 请求头 + （空行）+ 消息体；响应报文 = 状态行（版本+状态码+短语）+ 响应头 + （空行）+ 消息体。\n\n- 关键区分：**请求行是\"方法+路径\"，状态行是\"版本+状态码\"**\n- 加分项：说出\"头和体之间必须空行，Content-Length 表示体长\""
+    },
+    {
+      "id": "http-iv-18-17",
+      "track": "http",
+      "no": 18,
+      "q": "GET 和 POST 的区别？",
+      "a": "**答：** 语义上 GET 是\"读\"、POST 是\"写\"。数据位置上 GET 放 URL（query string）、POST 放 body。GET 幂等安全，POST 不幂等。URL 长度受限，body 几乎不受限。\n\n- 关键区分：**读 vs 写、URL vs body、幂等 vs 不幂等**\n- 加分项：说出\"GET 不用 body 是约定，不是强制\""
+    },
+    {
+      "id": "http-iv-19-18",
+      "track": "http",
+      "no": 19,
+      "q": "什么是幂等性？哪些方法幂等？为什么它重要？",
+      "a": "**答：** 幂等 = 执行 1 次和 100 次结果一样。GET/PUT/DELETE 幂等，POST 不幂等，PATCH 看情况。幂等性决定\"能不能放心重试\"——POST 不幂等，重试会导致重复下单。\n\n- 关键区分：**幂等决定重试安全性**\n- 加分项：说出\"用幂等键解决 POST 重复问题\""
+    },
+    {
+      "id": "http-iv-20-19",
+      "track": "http",
+      "no": 20,
+      "q": "PUT 和 PATCH 的区别？",
+      "a": "**答：** PUT 是\"整体替换\"（缺的字段会被删/覆盖），PATCH 是\"局部修改\"（只改给的字段）。PUT 幂等，PATCH 不一定（`+1` 不幂等，`设为 x` 幂等）。\n\n- 一句话：**PUT 换整个，PATCH 改一部分**\n- 加分项：举例 `PUT /users/1` 替换整个用户 vs `PATCH /users/1` 只改名\n\n**Q21: HTTP 状态码怎么分类？说出几个常见的。**\n\n**答：** 百位数定调：2xx 成功（200/201/204）、3xx 重定向（301/302/304）、4xx 客户端错（400/401/403/404）、5xx 服务器错（500/502/503）。\n\n- 口诀：**2 成功、3 重定向、4 客户错、5 服务器错**\n- 加分项：说出 304 不是重定向是缓存"
+    },
+    {
+      "id": "http-iv-22-20",
+      "track": "http",
+      "no": 22,
+      "q": "301 和 302 的区别？",
+      "a": "**答：** 301 永久重定向（浏览器会缓存，下次直接去新地址），302 临时重定向（浏览器不缓存，下次还来问）。301 用于换域名/永久迁移，302 用于临时跳转（如登录跳转）。\n\n- 一句话：**301 永久，302 临时**\n- 加分项：说出重定向靠 `Location` 头指明新地址"
+    },
+    {
+      "id": "http-iv-23-21",
+      "track": "http",
+      "no": 23,
+      "q": "401 和 403 的区别？",
+      "a": "**答：** 401 = 没登录（不知道你是谁），403 = 登录了但没权限（知道你是谁但不许看）。一句话：401 是\"你是谁？\"，403 是\"我知道你，但你不许看\"。\n\n- 关键区分：**未认证 vs 已认证无权限**\n- 加分项：举例\"没登录访问个人中心=401，普通用户看管理员后台=403\""
+    },
+    {
+      "id": "http-iv-24-22",
+      "track": "http",
+      "no": 24,
+      "q": "500、502、503 的区别？",
+      "a": "**答：** 500 = 服务器自己代码崩了；502 = 上游服务器挂了（网关连不上后端）；503 = 服务过载/维护中（我还活着但不干活）。\n\n- 关键区分：**500 自己崩、502 上游挂、503 自己暂时不干**\n- 加分项：举例\"Nginx→Node→数据库\"链路里各自的错误码"
+    },
+    {
+      "id": "http-iv-25-23",
+      "track": "http",
+      "no": 25,
+      "q": "Host 头是干什么的？没有它会怎样？",
+      "a": "**答：** Host 头让\"一个 IP 跑多个网站\"成为可能——服务器靠它判断\"你要访问哪个站点\"。HTTP/1.1 请求必须带 Host，没有可能返回 400。\n\n- 一句话：**Host 头 = 虚拟主机分发的依据**\n- 加分项：说出\"同一个 IP 上 Nginx 按 Host 分发到不同网站\""
+    },
+    {
+      "id": "http-iv-26-24",
+      "track": "http",
+      "no": 26,
+      "q": "HTTP 是无状态的，这对\"登录\"意味着什么？",
+      "a": "**答：** HTTP 每次请求独立，服务器\"忘了\"你是谁。所以登录状态要靠额外机制维持——Cookie（浏览器存凭证）+ Session（服务器存数据），每次请求带 Cookie 让服务器认出你。\n\n- 关键区分：**无状态 = 每次请求独立，记忆要靠 Cookie/Session 补**\n- 加分项：说出\"无状态让服务器能水平扩展\""
+    },
+    {
+      "id": "http-iv-27-25",
+      "track": "http",
+      "no": 27,
+      "q": "HTTPS 为什么安全？核心思路是什么？",
+      "a": "**答：** HTTPS = HTTP + TLS。TLS 用混合加密——非对称加密安全交换一把对称密钥，之后全程对称加密。同时证书防中间人、数字签名防篡改。\n\n- 一句话：**非对称换对称，之后全程对称**\n- 加分项：说出\"贵的干一次，便宜的干一万次\""
+    },
+    {
+      "id": "http-iv-28-26",
+      "track": "http",
+      "no": 28,
+      "q": "对称加密和非对称加密的区别？",
+      "a": "**答：** 对称加密一把钥匙又锁又开，快，但钥匙分发难；非对称加密一对钥匙（公钥加密私钥解密），解决分发但慢。所以 TLS 混合用。\n\n- 关键区分：**对称快但分发难，非对称慢但分发易**\n- 加分项：说出 RSA 比 AES 慢几个数量级"
+    },
+    {
+      "id": "http-iv-29-27",
+      "track": "http",
+      "no": 29,
+      "q": "证书是干什么的？没有证书会怎样？",
+      "a": "**答：** 证书是 CA 给公钥的\"盖章\"，证明\"这个公钥真的属于某域名\"。没有证书，中间人可以把公钥偷换成自己的，客户端用它加密，中间人解密——加密白费（中间人攻击）。\n\n- 关键区分：**证书解决\"公钥身份\"问题**\n- 加分项：说出\"浏览器内置 CA 公钥来验签\""
+    },
+    {
+      "id": "http-iv-30-28",
+      "track": "http",
+      "no": 30,
+      "q": "TLS 握手在干什么？",
+      "a": "**答：** 协商加密算法 + 交换随机数 + 验证服务器证书，最终产出一把双方共享的对称密钥，之后数据都用它加密。TLS 1.3 把握手压到 1-RTT。\n\n- 一句话：**协商 + 交换 + 验证，产出对称密钥**\n- 加分项：说出 TLS 1.3 的 1-RTT 改进"
+    },
+    {
+      "id": "http-iv-31-29",
+      "track": "http",
+      "no": 31,
+      "q": "什么是中间人攻击？HTTPS 怎么防？",
+      "a": "**答：** 中间人攻击是攻击者伪装成服务器，把公钥偷换成自己的，从而解密客户端流量。HTTPS 靠证书防——证书由可信 CA 签名，客户端用内置 CA 公钥验签，发现公钥被偷换就报警（`ERR_CERT_AUTHORITY_INVALID`）。\n\n- 关键区分：**防中间人靠证书，不靠加密本身**\n- 加分项：说出\"自签证书触发警告，恰恰证明证书机制在工作\""
+    },
+    {
+      "id": "http-iv-32-30",
+      "track": "http",
+      "no": 32,
+      "q": "数字签名是怎么保证\"内容没被篡改\"的？",
+      "a": "**答：** 签名 = 用私钥对消息哈希加密；验签 = 用公钥解密并比对哈希。内容改一个字，哈希就变，验签失败。所以篡改能被发现。\n\n- 一句话：**私钥签名、公钥验签，改了必被发现**\n- 加分项：说出\"签名绑定了内容和私钥\""
+    },
+    {
+      "id": "http-iv-33-31",
+      "track": "http",
+      "no": 33,
+      "q": "强缓存和协商缓存的区别？",
+      "a": "**答：** 强缓存（`Cache-Control: max-age`）在有效期内**不发请求**直接用本地；协商缓存（`ETag`/`Last-Modified`）要发请求，但可能只回 304 省 body。两者配合：先强缓存，过期再协商。\n\n- 关键区分：**发不发请求是核心区别**\n- 加分项：说出 304 响应不带 body"
+    },
+    {
+      "id": "http-iv-34-32",
+      "track": "http",
+      "no": 34,
+      "q": "`no-cache` 和 `no-store` 的区别？",
+      "a": "**答：** `no-cache` 是\"缓存，但每次用前先问服务器\"；`no-store` 是\"完全不缓存\"。很多人以为 `no-cache` 是不缓存，恰恰反了。\n\n- 一句话：**no-cache 每次先问，no-store 压根不存**\n- 加分项：说出隐私数据用 `no-store`"
+    },
+    {
+      "id": "http-iv-35-33",
+      "track": "http",
+      "no": 35,
+      "q": "ETag 和 Last-Modified 的区别？谁更可靠？",
+      "a": "**答：** ETag 是\"版本指纹\"（内容哈希），精确到内容；Last-Modified 是\"最后修改时间\"，精确到秒。ETag 更可靠——1 秒内改多次 Last-Modified 检测不到。现代实践优先 ETag。\n\n- 关键区分：**ETag 精确到内容，Last-Modified 精确到秒**\n- 加分项：说出\"1 秒内改两次文件 Last-Modified 可能失效\""
+    },
+    {
+      "id": "http-iv-36-34",
+      "track": "http",
+      "no": 36,
+      "q": "Cookie 是怎么让 HTTP 记住登录状态的？",
+      "a": "**答：** HTTP 无状态。登录时服务器 `Set-Cookie` 让浏览器存凭证，之后每次请求浏览器自动带 `Cookie` 头，服务器据此认出用户。一进一出，就是登录状态的基础。\n\n- 一句话：**Set-Cookie 种，Cookie 带，一进一出**\n- 加分项：说出\"Cookie 存凭证，Session 存数据\""
+    },
+    {
+      "id": "http-iv-37-35",
+      "track": "http",
+      "no": 37,
+      "q": "Cookie 和 Session 的区别？为什么不能把用户数据放 Cookie？",
+      "a": "**答：** Cookie 存在浏览器，用户能改、能被 XSS 偷，不可信，且约 4KB 限制；Session 存在服务器端，可信。所以 Cookie 只存凭证（session id），数据放 Session。Cookie 是钥匙，Session 是房间。\n\n- 关键区分：**Cookie 不可信 + 有大小限制，所以只存凭证**\n- 加分项：说出\"Session 放 Redis 能重启不丢、多机共享\""
+    },
+    {
+      "id": "http-iv-38-36",
+      "track": "http",
+      "no": 38,
+      "q": "Cookie 的三个安全属性是什么？各防什么？",
+      "a": "**答：** `HttpOnly`（JS 读不到，防 XSS 偷凭证）、`Secure`（只在 HTTPS 传，防窃听）、`SameSite`（跨站请求不带，防 CSRF）。\n\n- 一句话：**HttpOnly 防 XSS、Secure 防窃听、SameSite 防 CSRF**\n- 加分项：说出 SameSite 的 Strict/Lax/None 三档"
+    },
+    {
+      "id": "http-iv-39-37",
+      "track": "http",
+      "no": 39,
+      "q": "什么是同源策略？为什么需要它？",
+      "a": "**答：** 同源 = 协议 + 域名 + 端口全相同。同源策略是浏览器安全铁律——一个网页的 JS 只能访问同源数据，防止恶意网站偷用你已登录的 cookie 发请求。合法跨域用 CORS 头放行。\n\n- 关键区分：**同源策略是浏览器的规则，服务器之间（curl/Node）没有它**\n- 加分项：说出 CORS 头 `Access-Control-Allow-Origin`"
+    },
+    {
+      "id": "http-iv-40-38",
+      "track": "http",
+      "no": 40,
+      "q": "304 是什么？它和缓存什么关系？",
+      "a": "**答：** 304 Not Modified 不是重定向，是\"内容没变，用你本地缓存\"。协商缓存时，服务器比对 ETag/Last-Modified，发现没变就回 304（不带 body），客户端继续用本地缓存。\n\n- 一句话：**304 = 没变，用缓存，省 body**\n- 加分项：说出\"304 是协商缓存的结果，不是错误\""
+    },
+    {
+      "id": "http-iv-41-39",
+      "track": "http",
+      "no": 41,
+      "q": "HTTP/1.1 的主要问题是什么？",
+      "a": "**答：** 队头阻塞——一条连接一次只处理一个请求，慢请求堵住后面所有。浏览器靠开多条并行连接缓解，但连接有成本且受限。\n\n- 一句话：**1.1 的问题是请求排队**\n- 加分项：说出\"大文件卡前面，小文件全等着\""
+    },
+    {
+      "id": "http-iv-42-40",
+      "track": "http",
+      "no": 42,
+      "q": "HTTP/2 的核心改进是什么？",
+      "a": "**答：** 多路复用（帧 + 流 ID，一条连接并行多个请求）、头部压缩（HPACK）、二进制分帧、服务器推送。核心是解决 HTTP/1.1 的应用层队头阻塞。\n\n- 一句话：**多路复用是头号改进**\n- 加分项：说出\"HPACK 让重复的头只发一次\""
+    },
+    {
+      "id": "http-iv-43-41",
+      "track": "http",
+      "no": 43,
+      "q": "HTTP/2 解决了队头阻塞吗？",
+      "a": "**答：** 解决了**应用层**的，没解决**传输层**的。因为所有流还跑在同一条 TCP 连接上，一个包丢了，整条连接的所有流都得等（TCP 按序上交）。\n\n- 关键区分：**应用层 vs 传输层，两层不同的队头阻塞**\n- 加分项：说出\"弱网下 HTTP/2 的好处大打折扣\""
+    },
+    {
+      "id": "http-iv-44-42",
+      "track": "http",
+      "no": 44,
+      "q": "HTTP/3 为什么换掉 TCP？QUIC 是什么？",
+      "a": "**答：** 因为 TCP 的队头阻塞根治不了（TCP 在内核，改不动）。QUIC 是基于 UDP 的协议，在用户态自己实现可靠性和\"流独立\"——一个流丢包不影响别的流。HTTP/3 就跑在 QUIC 上。\n\n- 一句话：**换 UDP，流独立，根治队头阻塞**\n- 加分项：说出\"QUIC 握手更短，可 0-RTT\""
+    },
+    {
+      "id": "http-iv-45-43",
+      "track": "http",
+      "no": 45,
+      "q": "QUIC 跑在 UDP 上，UDP 不可靠，那 HTTP/3 怎么保证可靠？",
+      "a": "**答：** UDP 只是\"地基\"。QUIC 在 UDP 之上**自己实现**了可靠传输——序号、确认、重传、拥塞控制都搬到用户态做。所以 HTTP/3 依然可靠，只是可靠性由 QUIC 而不是 TCP 提供。\n\n- 关键区分：**UDP 不可靠 ≠ QUIC 不可靠**\n- 加分项：说出\"在用户态实现可靠，升级不用动内核\""
+    },
+    {
+      "id": "http-iv-46-44",
+      "track": "http",
+      "no": 46,
+      "q": "REST 的核心原则是什么？",
+      "a": "**答：** URL 用名词表示资源，HTTP 动词表示操作，状态码表示结果，无状态。比如 `GET /users`（查）、`POST /users`（建）、`DELETE /users/1`（删）。\n\n- 一句话：**名词定位资源，动词表示操作**\n- 加分项：说出\"POST 成功 201、DELETE 成功 204、查不到 404\""
+    },
+    {
+      "id": "http-iv-47-45",
+      "track": "http",
+      "no": 47,
+      "q": "为什么说 REST 接口要\"无状态\"？",
+      "a": "**答：** 无状态 = 每个请求带上所有必要信息（如认证 token），服务器不依赖\"上次记住了什么\"。这样服务器才能水平扩展（任何一台都能处理请求），也更容易测试和缓存。\n\n- 关键区分：**无状态利于水平扩展**\n- 加分项：说出\"登录状态靠 token/Cookie 传递，不靠服务器记忆\""
+    },
+    {
+      "id": "http-iv-48-46",
+      "track": "http",
+      "no": 48,
+      "q": "抓包调试的思路是什么？",
+      "a": "**答：** 别靠猜，靠亲眼看报文。五步：复现问题 → 看请求报文（方法/URL/头/body 对不对）→ 看响应报文（状态码/头/body）→ 按错误码定位（4xx 查自己，5xx 查服务器）→ 修复验证。\n\n- 一句话：**看请求、看响应、按错误码定位**\n- 加分项：说出\"传输层错误看 err.code，应用层看 statusCode\""
+    },
+    {
+      "id": "http-iv-49-47",
+      "track": "http",
+      "no": 49,
+      "q": "一个可调试的服务器，日志里至少要记什么？",
+      "a": "**答：** 方法、URL、状态码、耗时、来源 IP。有了这几样，就能回答\"谁在什么时候访问了什么、结果如何、慢不慢\"。出错时还要记错误信息/堆栈。\n\n- 关键区分：**日志是排障的\"黑匣子\"**\n- 加分项：说出\"包一层 res.end 自动记日志\"的技巧"
+    },
+    {
+      "id": "http-iv-50-48",
+      "track": "http",
+      "no": 50,
+      "q": "返回 JSON 时最容易漏什么？为什么？",
+      "a": "**答：** 最容易漏 `Content-Type: application/json`。漏了它，客户端不知道 body 是 JSON，`fetch().json()` 可能解析失败或当纯文本处理。所以通常封装一个 `sendJSON` 统一处理状态码 + Content-Type + 序列化。\n\n- 一句话：**JSON 必须带 Content-Type**\n- 加分项：说出\"204 不能有 body\"这个连带坑\n\n---\n\n## 二、白板手写题（Q51~Q60）\n\n面试官说\"来，写一个\"的时候，**先讲思路再动手**——这是第一分。"
+    },
+    {
+      "id": "http-iv-51-49",
+      "track": "http",
+      "no": 51,
+      "q": "手写一个 TCP echo 服务器，客户端发什么回什么，进程自然退出？",
+      "a": "**答：** 核心是 `createServer` + `data` 事件里原样 `write` 回去 + 优雅关闭。\n\n```js\nimport net from 'node:net';\n\nconst server = net.createServer((socket) => {\n  socket.on('data', (d) => socket.write(d)); // 原样回\n  socket.on('end', () => socket.end());\n});\n\nserver.listen(0, '127.0.0.1', () => {\n  const client = net.createConnection({ host: '127.0.0.1', port: server.address().port }, () => {\n    client.write('你好');\n    client.end();\n  });\n  client.on('data', (d) => console.log('回显:', d.toString()));\n  client.on('close', () => server.close(() => console.log('退出')));\n});\n```\n\n- 讲一句：**TCP 是双向流，data 里 write 回去就是 echo**\n- 加分：说清\"客户端 `end()` 发 FIN，`close` 才彻底断\""
+    },
+    {
+      "id": "http-iv-52-50",
+      "track": "http",
+      "no": 52,
+      "q": "手写一个函数，判断两个 IP 是否在同一网段（/24）？",
+      "a": "**答：** 用位运算把 IP 转整数，与掩码按位与，比较网络地址。\n\n```js\nfunction sameSubnet(a, b, prefix = 24) {\n  const toInt = (ip) => ip.split('.').reduce((acc, n) => ((acc << 8) >>> 0) + Number(n), 0) >>> 0;\n  const mask = (~0 << (32 - prefix)) >>> 0;\n  return (toInt(a) & mask) === (toInt(b) & mask);\n}\nconsole.log(sameSubnet('192.168.1.10', '192.168.1.20')); // true\nconsole.log(sameSubnet('192.168.1.10', '192.168.2.10')); // false\n```\n\n- 讲一句：**同网段 = 网络地址相同 = 可直连**\n- 加分：说清掩码是\"前 N 位为 1\""
+    },
+    {
+      "id": "http-iv-53-51",
+      "track": "http",
+      "no": 53,
+      "q": "手写一个返回 JSON 的 HTTP 服务器，正确处理 Content-Type 和状态码？",
+      "a": "**答：** 三件事：设 `Content-Type: application/json`、设状态码、`JSON.stringify`。\n\n```js\nimport http from 'node:http';\n\nfunction sendJSON(res, code, data) {\n  res.statusCode = code;\n  res.setHeader('Content-Type', 'application/json; charset=utf-8');\n  res.end(JSON.stringify(data));\n}\n\nhttp.createServer((req, res) => {\n  if (req.url === '/users') sendJSON(res, 200, [{ id: 1, name: '小明' }]);\n  else sendJSON(res, 404, { error: 'Not Found' });\n}).listen(3000);\n```\n\n- 讲一句：**JSON 必须带 Content-Type，封装 sendJSON 统一处理**\n- 加分：说清\"204 不能有 body\"要单独分支"
+    },
+    {
+      "id": "http-iv-54-52",
+      "track": "http",
+      "no": 54,
+      "q": "手写一个读取 POST body 的函数，并处理非法 JSON？",
+      "a": "**答：** body 是流式的，要 `data` 累积、`end` 解析，用 Promise 包起来能 `await`。\n\n```js\nfunction readBody(req) {\n  return new Promise((resolve, reject) => {\n    let b = '';\n    req.on('data', (c) => (b += c));\n    req.on('end', () => {\n      try {\n        resolve(b ? JSON.parse(b) : {});\n      } catch {\n        reject(new Error('非法 JSON'));\n      }\n    });\n  });\n}\n```\n\n- 讲一句：**body 是流，要 data 累积、end 解析**\n- 加分：说清\"非法 JSON 要 reject，返回 400\""
+    },
+    {
+      "id": "http-iv-55-53",
+      "track": "http",
+      "no": 55,
+      "q": "手写一个带缓存头的接口，支持 ETag 协商？",
+      "a": "**答：** 比对 `If-None-Match` 和 ETag，匹配回 304，否则回 200 + 新 ETag。\n\n```js\nconst ETAG = '\"v1\"';\nhttp.createServer((req, res) => {\n  if (req.headers['if-none-match'] === ETAG) {\n    res.statusCode = 304;\n    res.end();\n  } else {\n    res.setHeader('ETag', ETAG);\n    res.setHeader('Cache-Control', 'public, max-age=60');\n    res.end('资源内容');\n  }\n}).listen(3000);\n```\n\n- 讲一句：**If-None-Match 匹配 → 304，不匹配 → 200 + 新 ETag**\n- 加分：说清\"强缓存 + 协商缓存两级配合\""
+    },
+    {
+      "id": "http-iv-56-54",
+      "track": "http",
+      "no": 56,
+      "q": "说清楚 TCP 是怎么做到\"可靠传输\"的？",
+      "a": "**答：** 四件套：① 序列号按字节编号；② 确认号 = 期待的下一个字节；③ 丢包靠超时重传 + 3 个重复 ack 快速重传；④ 乱序靠接收缓冲区按序号排序、重复靠序号去重、损坏靠校验和。核心是\"序号 + 确认\"这一对数字。\n\n- 关键区分：**丢包/乱序/重复/损坏，各有各的解法**\n- 加分：说出\"累积确认，ack=N 表示 N 之前全收到\""
+    },
+    {
+      "id": "http-iv-57-55",
+      "track": "http",
+      "no": 57,
+      "q": "说清楚 HTTPS 的握手和加密流程？",
+      "a": "**答：** ① 客户端生成对称密钥；② 用服务器公钥加密它发给服务器；③ 服务器私钥解密拿到对称密钥；④ 双方之后用对称密钥加密通信。证书保证\"公钥是真的\"，签名保证\"内容没被篡改\"。\n\n- 关键区分：**非对称换对称，之后全程对称**\n- 加分：说出\"证书防中间人偷换公钥\""
+    },
+    {
+      "id": "http-iv-58-56",
+      "track": "http",
+      "no": 58,
+      "q": "说清楚 HTTP/2 的多路复用是怎么实现的？",
+      "a": "**答：** 把每个请求-响应拆成独立的帧，每个请求一个流 ID，同一条连接上不同流的帧交错传输，接收方按流 ID 重组。于是慢请求的帧挡不住快请求的帧。\n\n- 关键区分：**帧 + 流 ID，交错传输**\n- 加分：说出\"对比 1.1 的串行，2 是并行\""
+    },
+    {
+      "id": "http-iv-59-57",
+      "track": "http",
+      "no": 59,
+      "q": "手写一个完整的 REST 用户接口（增删改查）？",
+      "a": "**答：** 方法 + 路径分发到内存数组操作，POST 建 201、DELETE 删 204、查不到 404。\n\n```js\nlet users = [{ id: 1, name: '小明' }];\n\nhttp.createServer(async (req, res) => {\n  const { method } = req;\n  const [path] = req.url.split('?');\n\n  if (method === 'GET' && path === '/api/users') {\n    sendJSON(res, 200, users);\n  } else if (method === 'POST' && path === '/api/users') {\n    const body = await readBody(req);\n    const u = { id: users.length + 1, name: body.name };\n    users.push(u);\n    sendJSON(res, 201, u);\n  } else if (method === 'DELETE' && path.startsWith('/api/users/')) {\n    const id = Number(path.split('/')[3]);\n    const before = users.length;\n    users = users.filter((x) => x.id !== id);\n    if (users.length === before) return sendJSON(res, 404, { error: 'Not Found' });\n    sendJSON(res, 204, null);\n  } else {\n    sendJSON(res, 404, { error: 'Not Found' });\n  }\n}).listen(3000);\n```\n\n- 讲一句：**REST = 方法 + 路径 + 状态码三者统一**\n- 加分：说清\"精确路由放前缀路由前面\""
+    },
+    {
+      "id": "http-iv-60-58",
+      "track": "http",
+      "no": 60,
+      "q": "手写一个能记录每个请求日志的服务器（可调试）？",
+      "a": "**答：** 核心是包一层 `res.end`，让日志自动发生；再 try/catch 兜异常。\n\n```js\nhttp.createServer((req, res) => {\n  const start = Date.now();\n  const ip = req.socket.remoteAddress;\n\n  const originalEnd = res.end;\n  res.end = function (...args) {\n    console.log(`[${req.method}] ${req.url} -> ${res.statusCode}（${Date.now() - start} ms）来自 ${ip}`);\n    originalEnd.apply(res, args);\n  };\n\n  try {\n    if (req.url === '/500') throw new Error('模拟错误');\n    res.end('ok');\n  } catch (err) {\n    res.statusCode = 500;\n    res.end('500 Internal Server Error');\n  }\n}).listen(3000);\n```\n\n- 讲一句：**包一层 res.end 自动记日志，try/catch 兜异常**\n- 加分：说清\"日志记方法/URL/状态码/耗时/来源 IP\""
+    },
+    {
+      "id": "http-iv-61-59",
+      "track": "http",
+      "no": 61,
+      "q": "下面这段代码输出什么？",
+      "a": "```js\nimport net from 'node:net';\nconsole.log(net.isIP('127.0.0.1'), net.isIP('::1'), net.isIP('999.1.1.1'));\n```\n\n**答：** `4 6 0`。`isIP` 返回 4=IPv4、6=IPv6、0=非法。"
+    },
+    {
+      "id": "http-iv-62-60",
+      "track": "http",
+      "no": 62,
+      "q": "下面这段代码输出什么？",
+      "a": "```js\nfunction toInt(ip) {\n  return ip.split('.').reduce((a, n) => ((a << 8) >>> 0) + Number(n), 0) >>> 0;\n}\nconst mask = (~0 << (32 - 24)) >>> 0;\nconsole.log((toInt('192.168.1.10') & mask) >>> 0, '→ 转回 IP 是 192.168.1.0');\n```\n\n**答：** 输出一个整数（`3232235776`），转回 IP 是 `192.168.1.0`——这是 `/24` 的网络地址。"
+    },
+    {
+      "id": "http-iv-63-61",
+      "track": "http",
+      "no": 63,
+      "q": "下面这段代码，第二次请求返回什么状态码？",
+      "a": "```js\nconst ETAG = '\"v1\"';\n// 第一次：响应 200 + ETag: \"v1\"\n// 第二次：客户端带 If-None-Match: \"v1\"\nif (req.headers['if-none-match'] === ETAG) {\n  res.statusCode = 304; // ← 第二次走到这里\n  res.end();\n}\n```\n\n**答：** `304 Not Modified`。因为客户端带的 `If-None-Match` 和服务器 ETag 匹配，内容没变，回 304。\n\n---\n\n## 三、一页速查表"
+    },
+    {
+      "id": "docker-iv-1-0",
+      "track": "docker",
+      "no": 1,
+      "q": "镜像、容器、仓库分别是什么？什么关系？",
+      "a": "**答：** 镜像是只读的构建产物（类），容器是镜像运行起来的实例（实例），仓库是存放镜像的远端 registry。`docker pull` 从仓库拉镜像，`docker run` 把镜像跑成容器，`docker push` 推回仓库。\n\n- 关键区分：**镜像只读、容器可销毁、仓库在远端**\n- 类比 npm：registry / 包 / 运行中的程序"
+    },
+    {
+      "id": "docker-iv-2-1",
+      "track": "docker",
+      "no": 2,
+      "q": "容器和虚拟机有什么区别？为什么容器更快？",
+      "a": "**答：** 虚拟机虚拟的是**硬件**（每个虚机一个完整 Guest OS），容器虚拟的是**操作系统视图**（复用宿主内核，用 namespace + cgroup 隔离用户空间）。所以容器启动 = 启动一个被圈起来的进程（毫秒级），虚拟机要启动一整个 OS（几十秒）。代价是容器隔离性弱、且必须与宿主同内核。\n\n- 关键区分：**虚拟硬件 vs 虚拟 OS 视图**\n- 加分：说出 namespace（隔离\"看什么\"）+ cgroup（限制\"用多少\"）"
+    },
+    {
+      "id": "docker-iv-3-2",
+      "track": "docker",
+      "no": 3,
+      "q": "Docker 的架构是怎样的？client 和 daemon 什么关系？",
+      "a": "**答：** 三层：client（`docker` 命令行，把命令翻译成 REST 请求）、daemon（`dockerd` 后台进程，真正干活）、registry（存镜像的远端）。client 和 daemon 可以不在同一台机器（`-H` 远程连接）。daemon 是单点，它挂了所有命令报 `Cannot connect to the Docker daemon`。\n\n- 关键区分：**client 传话、daemon 干活、registry 存镜像**"
+    },
+    {
+      "id": "docker-iv-4-3",
+      "track": "docker",
+      "no": 4,
+      "q": "Docker 是容器技术的发明者吗？底层依赖什么？",
+      "a": "**答：** 不是。Docker 2013 年出现，本质是把 Linux 早就有的 namespace + cgroup + UnionFS **包装成好用的工具**，是容器技术的普及者。底层技术早已存在于内核。\n\n- 加分：知道 namespace/cgroup/UnionFS 三件套"
+    },
+    {
+      "id": "docker-iv-5-4",
+      "track": "docker",
+      "no": 5,
+      "q": "为什么说 Docker 解决的是\"环境一致性\"而不是\"打包代码\"？",
+      "a": "**答：** 因为程序依赖的从来不只是代码，还有 Node 版本、依赖版本、系统库、glibc 等一整套环境。Docker 把\"代码 + 环境\"在构建时打包成不可变镜像，运行时只是点亮它，于是\"我这儿能跑，你那儿一定能跑\"。这是对\"works on my machine\"诅咒的根治。\n\n- 关键词：**不可变镜像 + 构建时固化环境**"
+    },
+    {
+      "id": "docker-iv-6-5",
+      "track": "docker",
+      "no": 6,
+      "q": "镜像的\"不可变\"带来什么好处？",
+      "a": "**答：** 三个好处：1) 环境一致（镜像一样，环境就一样）；2) 回滚简单（旧镜像还在，指回去就行）；3) 可复现 bug（拉下镜像，bug 原样复现）。\n\n- 关键因果：**不可变 → 环境一致 + 秒级回滚**"
+    },
+    {
+      "id": "docker-iv-7-6",
+      "track": "docker",
+      "no": 7,
+      "q": "Windows/Mac 上的 Docker 和 Linux 上的 Docker 有区别吗？",
+      "a": "**答：** 有。Linux 容器必须跑在 Linux 内核上，所以 Windows/Mac 的 Docker Desktop 其实是先起一个**轻量 Linux 虚拟机**，容器跑在那个虚拟机里。这解释了为什么 Windows/Mac 上 Docker 占内存更大。\n\n- 关键词：**容器共享宿主内核，跨系统靠虚拟机**"
+    },
+    {
+      "id": "docker-iv-8-7",
+      "track": "docker",
+      "no": 8,
+      "q": "`docker run` 背后发生了什么？",
+      "a": "**答：** `docker run` = `docker create`（创建容器）+ `docker start`（启动）+ `docker attach`（前台附着）。找不到镜像时自动 pull。理解拆解后就知道：run 的参数在创建时定死，不能改，只能重建。\n\n- 关键区分：**run 是快捷方式，create/start 是分步操作**"
+    },
+    {
+      "id": "docker-iv-9-8",
+      "track": "docker",
+      "no": 9,
+      "q": "镜像是由什么组成的？",
+      "a": "**答：** 一串**只读层**从下往上叠起来，每层记录\"相对上一层的文件系统变化\"。底层是基础系统，顶层是应用。合起来看是一个完整文件系统，物理上分层存储、共享、复用。\n\n- 关键词：**只读层 + 叠加**"
+    },
+    {
+      "id": "docker-iv-10-9",
+      "track": "docker",
+      "no": 10,
+      "q": "为什么要\"分层\"而不是\"一个大文件\"？",
+      "a": "**答：** 因为层能表达**增量**。多个镜像共享同一底层，只下载/存一份；升级只传变化的那一层；构建时改代码只需重建最上面几层。这是\"差分\"思想，和 Git 的快照 + 内容寻址同源。\n\n- 关键区分：**层 = 增量，大文件 = 全量**"
+    },
+    {
+      "id": "docker-iv-11-10",
+      "track": "docker",
+      "no": 11,
+      "q": "什么是\"内容寻址\"？它带来什么？",
+      "a": "**答：** 每层的身份是 sha256(内容)，内容一样 digest 就一样。带来：1) 层可复用（共享底层只存一份）；2) 完整性校验（内容被改 digest 就变）；3) 缓存判断（digest 没变就命中缓存）。\n\n- 关键因果：**内容一样 → digest 一样 → 可复用/可校验/可缓存**"
+    },
+    {
+      "id": "docker-iv-12-11",
+      "track": "docker",
+      "no": 12,
+      "q": "OverlayFS 是怎么把多层\"叠\"成一个文件系统的？",
+      "a": "**答：** OverlayFS 把多个只读层 + 一个可写层叠成一个视图：**读的时候自上而下找第一个命中**（上层覆盖下层），**写的时候永远写进最上面的可写层**（删除用 whiteout 标记遮住，不真删）。容器启动时在最上面加一层可写层，所以容器里的写不影响镜像。\n\n- 关键词：**上层覆盖下层 + 写进可写层**"
+    },
+    {
+      "id": "docker-iv-13-12",
+      "track": "docker",
+      "no": 13,
+      "q": "`docker pull` 输出里的 `Already exists` 是什么意思？",
+      "a": "**答：** 表示那一层本地已经有了（可能来自其它镜像共享），直接复用、不重复下载。这是分层 + 内容寻址带来的\"下载省\"的体现。`Pull complete` 才是\"这层刚下好\"。\n\n- 关键词：**层共享，已有即跳过**"
+    },
+    {
+      "id": "docker-iv-14-13",
+      "track": "docker",
+      "no": 14,
+      "q": "`latest` 标签代表什么？生产能用吗？",
+      "a": "**答：** `latest` 只是\"没写 tag 时的默认值\"，**不代表最新版本**，它指向哪个镜像取决于维护者给谁打了这个标签，且会被移动。生产不能用（版本不确定、不可复现），要写死明确版本（`nginx:1.27`）甚至 digest。\n\n- 关键区分：**latest = 默认 tag ≠ 最新**"
+    },
+    {
+      "id": "docker-iv-15-14",
+      "track": "docker",
+      "no": 15,
+      "q": "镜像的 digest 和 tag 有什么区别？",
+      "a": "**答：** tag 是**可移动**的标签（`latest`、`1.27` 可以重新指向别的镜像）；digest 是**内容指纹**（sha256），焊死内容，不可变。用 digest 引用是绝对精确的（`nginx@sha256:6139...`）。\n\n- 关键区分：**tag 可移动，digest 焊死**"
+    },
+    {
+      "id": "docker-iv-16-15",
+      "track": "docker",
+      "no": 16,
+      "q": "构建缓存什么时候失效？",
+      "a": "**答：** 每条指令算一个缓存键（指令内容 + 上一层 digest），从**第一条变化的指令**开始，它和它后面的所有层都要重建，前面的继续命中缓存。`COPY` 的缓存键看**文件内容**（不看指令文本），内容一变这层就失效。\n\n- 推论：**贵且不常变的指令排最前**（依赖安装靠前，源码 COPY 靠后）"
+    },
+    {
+      "id": "docker-iv-17-16",
+      "track": "docker",
+      "no": 17,
+      "q": "`docker ps` 和 `docker ps -a` 的区别？",
+      "a": "**答：** `docker ps` 只显示**运行中**的容器；`-a`（all）显示所有状态（含 exited）。`-q` 只要 id（脚本用）。STATUS 列是关键：`Up` 在跑、`Exited (码)` 停了。\n\n- 高频坑：**新手总以为容器丢了，其实只是没加 -a**"
+    },
+    {
+      "id": "docker-iv-18-17",
+      "track": "docker",
+      "no": 18,
+      "q": "`docker stop` 和 `docker kill` 的区别？",
+      "a": "**答：** `stop` 发 SIGTERM（给进程 10 秒优雅退出，超时才强杀），`kill` 发 SIGKILL（立即死）。所以退出码 143 = 优雅退出，137 = 强杀。能 stop 就别 kill。\n\n- 关键区分：**温柔劝退 vs 一枪崩了**"
+    },
+    {
+      "id": "docker-iv-19-18",
+      "track": "docker",
+      "no": 19,
+      "q": "`docker exec` 和 `docker run` 的区别？",
+      "a": "**答：** `exec` 在**已运行**的容器里跑命令（`docker exec -it 容器 bash` 进入），`run` 基于镜像**新建并启动**一个容器。`exit` 只退出 exec 的进程，不影响容器本身。\n\n- 高频坑：**想\"进去\"却用 run，等于又起一个新容器**"
+    },
+    {
+      "id": "docker-iv-20-19",
+      "track": "docker",
+      "no": 20,
+      "q": "`-d` 和 `-it` 分别是什么？能一起用吗？",
+      "a": "**答：** `-d`（detach）后台运行、命令秒回；`-it` = `-i`（开 stdin，能输入）+ `-t`（开 TTY，有提示符），用于交互。两者一般不同时用：后台服务用 `-d`，交互 shell 用 `-it`。\n\n- 关键区分：**-d 后台、-it 交互**"
+    },
+    {
+      "id": "docker-iv-21-20",
+      "track": "docker",
+      "no": 21,
+      "q": "Dockerfile 里 `RUN` 和 `CMD` 的区别？",
+      "a": "**答：** `RUN` 是**构建时**执行（`docker build` 阶段），结果固化成一层；`CMD` 是**运行时**执行（容器启动命令）。用 `RUN node server.js` 想启动服务是错的——那是 build 阶段执行。\n\n- 关键区分：**RUN 构建时、CMD 运行时**"
+    },
+    {
+      "id": "docker-iv-22-21",
+      "track": "docker",
+      "no": 22,
+      "q": "`CMD` 和 `ENTRYPOINT` 的区别？怎么组合？",
+      "a": "**答：** `CMD` 是默认命令，可被 `docker run` 末尾参数**整体覆盖**；`ENTRYPOINT` 是固定命令，末尾参数**不覆盖它、只变成它的参数**。组合：ENTRYPOINT 定命令 + CMD 定默认参数。都推荐 exec 形式。\n\n- 记忆：**CMD 软默认，ENTRYPOINT 硬命令**"
+    },
+    {
+      "id": "docker-iv-23-22",
+      "track": "docker",
+      "no": 23,
+      "q": "exec 形式和 shell 形式有什么区别？",
+      "a": "**答：** exec 形式（`CMD [\"node\", \"server.js\"]`）直接以 node 为主进程（PID 1），SIGTERM 信号直达；shell 形式（`CMD node server.js`）会包一层 `/bin/sh -c`，主进程是 sh，信号被 sh 挡住，优雅退出失效。\n\n- 关键区分：**exec 形式主进程就是目标程序，信号直达**"
+    },
+    {
+      "id": "docker-iv-24-23",
+      "track": "docker",
+      "no": 24,
+      "q": "`COPY` 和 `ADD` 的区别？",
+      "a": "**答：** `ADD` 多两个能力：自动解压 tar、支持 URL。但这俩容易惹祸（行为隐形、引入不确定性），官方建议能用 COPY 就用 COPY。另注意尾斜杠：`COPY src/` 复制内容，`COPY src` 复制目录本身。\n\n- 关键词：**默认 COPY**"
+    },
+    {
+      "id": "docker-iv-25-24",
+      "track": "docker",
+      "no": 25,
+      "q": "`EXPOSE` 会开放端口吗？",
+      "a": "**答：** 不会。`EXPOSE` 只是**声明**端口（写进镜像元数据），不真正开放。真正开放靠 `docker run -p 宿主:容器`，或 `-P` 映射所有 EXPOSE 端口到随机宿主端口。\n\n- 关键区分：**声明 vs 真正开放**"
+    },
+    {
+      "id": "docker-iv-26-25",
+      "track": "docker",
+      "no": 26,
+      "q": "为什么要把依赖清单的 COPY 放在源码 COPY 之前？",
+      "a": "**答：** 因为 `COPY` 的缓存键看文件内容。`package.json` 不常变，先 COPY 它再 `RUN npm install`，install 这层能长期命中缓存；而源码常变，放后面。反过来（先 `COPY . .` 再 install），每次改代码都重装依赖。\n\n- 核心原则：**贵且不常变的排最前**"
+    },
+    {
+      "id": "docker-iv-27-26",
+      "track": "docker",
+      "no": 27,
+      "q": "端口映射 `-p` 怎么理解？",
+      "a": "**答：** `-p 宿主端口:容器端口`，左边是宿主机（外面访问的），右边是容器（应用真正监听的）。`127.0.0.1:8080:80` 只绑本机（更安全）。写反是高频错误。\n\n- 口诀：**左宿主机右容器**"
+    },
+    {
+      "id": "docker-iv-28-27",
+      "track": "docker",
+      "no": 28,
+      "q": "bridge、host、none 三种网络模式的区别？",
+      "a": "**答：** `bridge`（默认）：独立私有 IP + NAT，靠端口映射对外；`host`：共享宿主网络栈，无独立 IP、无需端口映射、性能高但无隔离；`none`：彻底断网（只有 lo），用于纯计算/高隔离。\n\n- 关键区分：**隔离程度 bridge > host > none 是反的（host 无隔离）**"
+    },
+    {
+      "id": "docker-iv-29-28",
+      "track": "docker",
+      "no": 29,
+      "q": "容器之间怎么通信？默认 bridge 能用容器名吗？",
+      "a": "**答：** 自定义网络里容器直接用**容器名**互访（内置 DNS 解析，地址 127.0.0.11）。默认 bridge 是旧实现，没有 DNS，只能靠 IP。所以多容器互联用自定义网络，`--link` 是更早的过时机制。\n\n- 关键词：**容器名互访靠内置 DNS，IP 会变名字不变**"
+    },
+    {
+      "id": "docker-iv-30-29",
+      "track": "docker",
+      "no": 30,
+      "q": "容器的数据会丢吗？怎么持久化？",
+      "a": "**答：** 容器可写层随容器删除而销毁，数据默认会丢。持久化：**volume**（Docker 管理，`-v 卷名:路径`，生产存数据）和 **bind mount**（挂宿主绝对路径，`-v /host:容器`，开发热更）。`docker rm` 不删卷，命名卷数据在容器删后仍在。\n\n- 关键区分：**volume 生产、bind mount 开发**"
+    },
+    {
+      "id": "docker-iv-31-30",
+      "track": "docker",
+      "no": 31,
+      "q": "匿名卷和命名卷的区别？",
+      "a": "**答：** `-v /data`（只写容器路径）是匿名卷（Docker 起随机名，难管理，删容器后变孤儿堆积）；`-v pgdata:/data` 是命名卷（有名字好管理）。日常用命名卷，孤儿卷 `docker volume prune` 清理。\n\n- 关键词：**命名卷推荐，匿名卷会堆积**"
+    },
+    {
+      "id": "docker-iv-32-31",
+      "track": "docker",
+      "no": 32,
+      "q": "`docker rm` 会删卷吗？`docker rm -v` 呢？",
+      "a": "**答：** `docker rm` 不删卷（匿名卷和命名卷都不删）。`docker rm -v` 只删它挂的**匿名卷**，命名卷仍不删。命名卷要 `docker volume rm 卷名`。\n\n- 关键区分：**rm 不删卷，rm -v 只删匿名卷**"
+    },
+    {
+      "id": "docker-iv-33-32",
+      "track": "docker",
+      "no": 33,
+      "q": "端口占用报什么错？",
+      "a": "**答：** `Bind for 0.0.0.0:8080 failed: port is already allocated`，意思是宿主机端口被占。换端口，或先找出占用者。报错后可能有 Created 残留容器，记得 rm。\n\n- 关键词：**port is already allocated = 宿主端口被占**"
+    },
+    {
+      "id": "docker-iv-34-33",
+      "track": "docker",
+      "no": 34,
+      "q": "多个容器怎么共享数据？",
+      "a": "**答：** 一个卷可以挂到多个容器（`-v shared:/data`），一个写、多个读。但多个容器同时写同一文件会有竞态（和多个进程写同一文件一样），所以适合\"一写多读\"。\n\n- 关键词：**共享卷，一写多读**"
+    },
+    {
+      "id": "docker-iv-35-34",
+      "track": "docker",
+      "no": 35,
+      "q": "compose 解决什么问题？",
+      "a": "**答：** 把\"一堆 docker run + 网络 + 卷\"声明成一个 YAML 文件，`docker compose up` 一键起整套、`down` 一键清。本质是 docker run 参数的**声明式**写法。\n\n- 关键词：**声明式编排，up/down 管理整套**"
+    },
+    {
+      "id": "docker-iv-36-35",
+      "track": "docker",
+      "no": 36,
+      "q": "`depends_on` 能保证服务就绪吗？",
+      "a": "**答：** 不能。`depends_on` 只保证启动**顺序**，不保证被依赖服务已**就绪**（如数据库初始化完成）。要等就绪：服务加 healthcheck，`depends_on` 用 `condition: service_healthy`；简单场景 `restart: on-failure` 重试。\n\n- 关键区分：**顺序 ≠ 就绪**"
+    },
+    {
+      "id": "docker-iv-37-36",
+      "track": "docker",
+      "no": 37,
+      "q": "`docker compose down` 和 `down -v` 的区别？",
+      "a": "**答：** `down` 停服务、删容器、删自动建的网络，**保留卷和镜像**；`down -v` 额外**删卷**（数据没了）。除非确定清库，别用 `-v`。\n\n- 关键词：**down -v 会删数据**"
+    },
+    {
+      "id": "docker-iv-38-37",
+      "track": "docker",
+      "no": 38,
+      "q": "什么是多阶段构建？解决什么问题？",
+      "a": "**答：** 一个 Dockerfile 多个 `FROM`，每个 FROM 开一个阶段，最终镜像只含最后一个阶段。构建工具（编译器、dev 依赖）只在第一阶段，`COPY --from` 把产物拷到运行阶段。解决\"构建工具和运行时不分\"导致的镜像臃肿 + 攻击面大。\n\n- 关键词：**阶段一构建、阶段二只拷产物**"
+    },
+    {
+      "id": "docker-iv-39-38",
+      "track": "docker",
+      "no": 39,
+      "q": "怎么减小镜像体积？",
+      "a": "**答：** 三板斧：1) 换 alpine/slim 基础镜像（立减 80%）；2) 多阶段构建（工具链不进镜像）；3) `.dockerignore` 减小构建上下文。外加：合并 RUN、只装生产依赖、装完即清理。\n\n- 关键词：**alpine + 多阶段 + .dockerignore**"
+    },
+    {
+      "id": "docker-iv-40-39",
+      "track": "docker",
+      "no": 40,
+      "q": "`.dockerignore` 有什么用？",
+      "a": "**答：** 像 `.gitignore`，告诉 Docker 构建时别把这些文件放进构建上下文。排除 node_modules/.git/.env，能让上下文从几百 MB 降到几 MB（build 快），并防止敏感信息（.env 密码）被打进镜像。\n\n- 关键词：**减小上下文 + 防泄漏**"
+    },
+    {
+      "id": "docker-iv-41-40",
+      "track": "docker",
+      "no": 41,
+      "q": "容器默认以什么用户运行？怎么改？",
+      "a": "**答：** 默认 **root**。root 权限大，被攻破后危害大。改法：先 root 做完安装，最后 `USER` 切到非 root 用户（最小权限原则）。\n\n- 关键词：**最小权限，先装后切**"
+    },
+    {
+      "id": "docker-iv-42-41",
+      "track": "docker",
+      "no": 42,
+      "q": "为什么日志要往 stdout 打？",
+      "a": "**答：** `docker logs` 读的是容器 stdout/stderr，日志收集系统（ELK、Loki、云日志）也靠收集 stdout。写文件的话，日志系统收不到，`docker logs` 也看不到。这是容器化应用的规范姿势。\n\n- 关键词：**日志 = stdout/stderr**"
+    },
+    {
+      "id": "docker-iv-43-42",
+      "track": "docker",
+      "no": 43,
+      "q": "Docker 安全主要关注哪几点？",
+      "a": "**答：** 三条主线：1) 最小权限（非 root、少端口、少卷）；2) 镜像扫描（`docker scout`/trivy 找漏洞）；3) 可信镜像源（官方 + 固定版本 + digest）。外加：密钥不进镜像、定期更新基础镜像。\n\n- 关键词：**最小权限 + 扫描 + 可信源**"
+    },
+    {
+      "id": "docker-iv-44-43",
+      "track": "docker",
+      "no": 44,
+      "q": "为什么不能用 `latest` 部署？",
+      "a": "**答：** `latest` 会漂移（指向哪个版本不确定），导致\"这次部署和上次不一样\"、不可复现、无法回滚。生产要固定版本号（`nginx:1.27`）甚至 digest。\n\n- 关键词：**版本漂移 = 不可复现**"
+    },
+    {
+      "id": "docker-iv-45-44",
+      "track": "docker",
+      "no": 45,
+      "q": "什么是健康检查（healthcheck）？",
+      "a": "**答：** 定义\"怎么探测一个容器是否健康\"（跑一条命令，退出码 0 算健康）。参数：`test`（探测命令）、`interval`（间隔）、`timeout`（超时）、`retries`（失败几次算不健康）。配合 `depends_on: condition: service_healthy` 让服务等依赖就绪。\n\n- 关键词：**探测 + 就绪门控**"
+    },
+    {
+      "id": "docker-iv-46-45",
+      "track": "docker",
+      "no": 46,
+      "q": "容器退出码 137 和 143 分别是什么？",
+      "a": "**答：** 137 = 被 SIGKILL 强杀（`docker kill`、OOM 被杀），143 = 收到 SIGTERM 优雅退出。`docker stop` 发 SIGTERM（143），`kill` 发 SIGKILL（137）。\n\n- 关键区分：**143 优雅、137 强杀**"
+    },
+    {
+      "id": "docker-iv-47-46",
+      "track": "docker",
+      "no": 47,
+      "q": "什么是重启策略（restart）？有哪些？",
+      "a": "**答：** 容器意外退出时自动重启的规则：`no`（默认）、`on-failure:N`（异常退出才重启，限次数）、`always`（总是重启）、`unless-stopped`（类似 always 但手动 stop 不重启）。生产推荐 `unless-stopped`。\n\n- 关键词：**unless-stopped 尊重手动停止**"
+    },
+    {
+      "id": "docker-iv-48-47",
+      "track": "docker",
+      "no": 48,
+      "q": "怎么把本机镜像搬到离线服务器？",
+      "a": "**答：** `docker save -o img.tar 镜像` 导出成 tar，拷过去 `docker load -i img.tar` 导入。注意 `save` 是镜像的，`export` 是容器的（别混）。\n\n- 关键词：**save/load 离线搬运镜像**"
+    },
+    {
+      "id": "docker-iv-49-48",
+      "track": "docker",
+      "no": 49,
+      "q": "怎么备份一个卷的数据？",
+      "a": "**答：** 用临时容器 + tar：`docker run --rm -v 卷名:/data -v $(pwd):/backup alpine tar czf /backup/bak.tar.gz -C /data .`。恢复反过来解压。`--rm` 让临时容器用完即删。\n\n- 关键词：**临时容器 + tar 备份**"
+    },
+    {
+      "id": "docker-iv-50-49",
+      "track": "docker",
+      "no": 50,
+      "q": "容器和镜像分别怎么\"瘦身/清理\"？",
+      "a": "**答：** 镜像瘦身：alpine + 多阶段 + 合并 RUN + .dockerignore。容器清理：`docker container prune`（清 exited 容器）；镜像清理：`docker image prune`（清无标签的 dangling 镜像）；卷清理：`docker volume prune`（清孤儿卷）。\n\n- 关键词：**prune 三连：container / image / volume**\n\n---\n\n## 二、白板手写题（Q51~Q60）\n\n面试官说\"来，写一个\"的时候，**先讲思路再动手**——这是第一分。代码写了 80% 也比卡住强，边写边说话。"
+    },
+    {
+      "id": "docker-iv-51-50",
+      "track": "docker",
+      "no": 51,
+      "q": "执行下面的命令，第二行输出什么？",
+      "a": "```bash\ndocker run -d --name web nginx\ndocker run -d --name web nginx\n```\n\n**答：** 报错：\n\n```text\ndocker: Error response from daemon: Conflict. The container name \"/web\" is already in use by container \"a1b2c3d4e5f6\". You have to remove (or rename) that container to be able to reuse that name.\n```\n\n- 关键：容器名唯一，同名冲突"
+    },
+    {
+      "id": "docker-iv-52-51",
+      "track": "docker",
+      "no": 52,
+      "q": "执行下面的命令，`docker ps` 能看到容器吗？为什么？",
+      "a": "```bash\ndocker run nginx\n# 按 Ctrl+C 退出\ndocker ps\n```\n\n**答：** 看不到。`docker ps` 只显示**运行中**的容器，Ctrl+C 把容器停了（状态 exited）。要用 `docker ps -a` 才能看到它。\n\n- 关键：`ps` 只看 running，`-a` 看全部"
+    },
+    {
+      "id": "docker-iv-53-52",
+      "track": "docker",
+      "no": 53,
+      "q": "下面 Dockerfile 构建后，`docker run 镜像 other.js` 实际执行什么？",
+      "a": "```dockerfile\nFROM node:22-alpine\nENTRYPOINT [\"node\"]\nCMD [\"server.js\"]\n```\n\n**答：** 执行 `node other.js`。因为 `ENTRYPOINT` 是固定命令（node），`docker run` 末尾的 `other.js` 替换的是 `CMD`（默认参数），不替换 ENTRYPOINT。\n\n- 关键：ENTRYPOINT 定命令、CMD 定默认参数，末尾参数替换 CMD"
+    },
+    {
+      "id": "docker-iv-54-53",
+      "track": "docker",
+      "no": 54,
+      "q": "怎么手写一个\"工程化达标\"的 Node 应用 Dockerfile（应用入口 server.js，监听 3000）？",
+      "a": "**答：**\n\n```dockerfile\nFROM node:22-alpine\nWORKDIR /app\nCOPY package*.json ./\nRUN npm install --omit=dev\nCOPY . .\nENV NODE_ENV=production\nEXPOSE 3000\nCMD [\"node\", \"server.js\"]\n```\n\n- 讲清：alpine（小）、依赖清单先 COPY（缓存）、只装生产依赖、CMD exec 形式（信号直达）"
+    },
+    {
+      "id": "docker-iv-55-54",
+      "track": "docker",
+      "no": 55,
+      "q": "怎么手写一个多阶段构建的 Dockerfile（第一阶段构建产出 dist/，第二阶段运行）？",
+      "a": "**答：**\n\n```dockerfile\nFROM node:22 AS builder\nWORKDIR /app\nCOPY package*.json ./\nRUN npm install\nCOPY . .\nRUN npm run build\n\nFROM node:22-alpine\nWORKDIR /app\nCOPY --from=builder /app/dist ./dist\nENV NODE_ENV=production\nCMD [\"node\", \"dist/server.js\"]\n```\n\n- 讲清：每个 FROM 开一阶段，`COPY --from=builder` 只拷产物，工具链不进最终镜像"
+    },
+    {
+      "id": "docker-iv-56-55",
+      "track": "docker",
+      "no": 56,
+      "q": "怎么手写一个能持久化的 postgres 启动命令（挂命名卷、设密码、后台）？",
+      "a": "**答：**\n\n```bash\ndocker run -d --name db \\\n  -v pgdata:/var/lib/postgresql/data \\\n  -e POSTGRES_PASSWORD=secret \\\n  postgres:16\n```\n\n- 讲清：命名卷持久化、`-d` 后台、`-e` 传密码"
+    },
+    {
+      "id": "docker-iv-57-56",
+      "track": "docker",
+      "no": 57,
+      "q": "怎么手写一个 compose，编排 web（build 当前目录）+ db（postgres:16），db 挂卷、web 等 db 健康？",
+      "a": "**答：**\n\n```yaml\nservices:\n  web:\n    build: .\n    ports:\n      - \"3000:3000\"\n    depends_on:\n      db:\n        condition: service_healthy\n  db:\n    image: postgres:16\n    environment:\n      POSTGRES_PASSWORD: secret\n    volumes:\n      - pgdata:/var/lib/postgresql/data\n    healthcheck:\n      test: [\"CMD-SHELL\", \"pg_isready -U postgres\"]\n      interval: 5s\n      timeout: 5s\n      retries: 5\n\nvolumes:\n  pgdata:\n```\n\n- 讲清：build vs image、命名卷、健康检查 + service_healthy"
+    },
+    {
+      "id": "docker-iv-58-57",
+      "track": "docker",
+      "no": 58,
+      "q": "说清楚\"构建缓存\"的机制，以及为什么要\"依赖清单先 COPY\"？",
+      "a": "**答：** 每条指令算一个缓存键（指令内容 + 上一层 digest），从第一条变化的指令起往后全重建。`COPY` 的缓存键看**文件内容**。依赖清单（package.json）不常变，先 COPY 它再 `RUN npm install`，install 能长期命中缓存；源码常变放后面。反过来，每次改代码都重装依赖。\n\n- 关键：**缓存键 = 指令 + 上层 digest；COPY 看文件内容**"
+    },
+    {
+      "id": "docker-iv-59-58",
+      "track": "docker",
+      "no": 59,
+      "q": "说清楚容器\"数据丢失\"的机制，以及卷怎么解决？",
+      "a": "**答：** 容器启动时 OverlayFS 在最上面加一层**可写层**，所有写入都进这一层，镜像的只读层不动。`docker rm` 时可写层随容器销毁，所以数据没了。卷（volume）是独立于容器的存储（`/var/lib/docker/volumes/`），数据写进卷而非可写层，删容器后卷还在，重挂载数据\"回来\"。\n\n- 关键：**可写层随容器销毁，卷独立于容器**"
+    },
+    {
+      "id": "docker-iv-60-59",
+      "track": "docker",
+      "no": 60,
+      "q": "说清楚\"容器名互访\"的原理，为什么默认 bridge 不行？",
+      "a": "**答：** 自定义网络内置一个 DNS（127.0.0.11），容器名会自动注册，容器间访问容器名时由 DNS 解析成 IP。IP 会变但名字不变，所以用名字连接稳定。默认 bridge 是 Docker 最老的实现，没带这个 DNS，所以只能靠 IP 互访。`--link` 是更早的单向静态机制，已被取代。\n\n- 关键：**内置 DNS + 容器名注册；默认 bridge 无 DNS**\n\n---\n\n## 三、一页速查表"
+    }
+  ]
+}

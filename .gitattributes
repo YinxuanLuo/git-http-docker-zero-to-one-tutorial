@@ -1,0 +1,35 @@
+# 统一换行符为 LF，避免 Windows/macOS 协作时整文件 diff
+* text=auto eol=lf
+
+# 二进制文件不做任何转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
+*.zip binary
+
+# 锁文件按二进制处理，避免 Git 去做行尾/合并处理
+pnpm-lock.yaml -text
+package-lock.json -text
+
+# 明确标记为文本、走 LF
+*.md    text eol=lf
+*.mjs   text eol=lf
+*.js    text eol=lf
+*.cjs   text eol=lf
+*.jsx   text eol=lf
+*.json  text eol=lf
+*.jsonc text eol=lf
+*.html  text eol=lf
+*.css   text eol=lf
+*.yaml  text eol=lf
+*.yml   text eol=lf
+
+# GitHub 语言统计：生成的 HTML 产物不参与语言占比
+*-阅读版.html linguist-generated=true
+*-练习站.html linguist-generated=true
+site/quiz-bank.json linguist-generated=true

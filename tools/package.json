@@ -1,0 +1,17 @@
+{
+  "name": "git-http-docker-tutorial-tools",
+  "private": true,
+  "type": "module",
+  "description": "教程配套工具：合成单文件 HTML 阅读版、生成交互练习站、仓库自检（Git / 网络 HTTP / Docker 三篇合一）",
+  "scripts": {
+    "build:html": "node build-html.mjs",
+    "build:practice": "node extract-quiz.mjs && node build-practice.mjs",
+    "build:all": "npm run build:practice && npm run build:html",
+    "check": "node check.mjs",
+    "test": "node test-practice.mjs"
+  },
+  "dependencies": {
+    "jsdom": "^30.1.2",
+    "marked": "^18.1.1"
+  }
+}

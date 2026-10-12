@@ -1,0 +1,40 @@
+# ---------- 依赖 ----------
+node_modules/
+.pnpm-store/
+
+# ---------- 构建中间产物 ----------
+# 注意：以下是最终交付物，**要提交**，不要加进忽略列表：
+#   Git-从零到一-阅读版.html / Git-从零到一-练习站.html
+#   site/quiz-bank.json   （由 extract-quiz.mjs 生成，保留以便复用题库数据）
+tools/dist/
+*.tsbuildinfo
+
+# 示例脚本运行时产生的临时目录
+examples/.tmp/
+
+# 生成过程中的临时/草稿文件（内容生成时的中间产物，绝不提交）
+.tmp*
+*.tmp
+*.log
+*.bak
+
+# ---------- 工作区本地数据 ----------
+# .workbuddy/ 存放本机工作区记忆与状态，属于本地数据，不提交
+.workbuddy/
+
+# ---------- 环境变量 ----------
+.env
+.env.*
+!.env.example
+
+# ---------- 测试残留 ----------
+# 浏览器自动化工具会在项目根目录留下会话日志/快照
+.playwright-cli/
+
+# ---------- 编辑器 / 系统 ----------
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*~

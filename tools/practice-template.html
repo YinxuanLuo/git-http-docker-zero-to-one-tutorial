@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git / 网络 HTTP / Docker 从零到一 · 练习站</title>
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --ink:#1a1d23; --ink-2:#4a5160; --ink-3:#8a92a3;
+  --line:#e4e7ee; --brand:#2f6fed; --brand-soft:#eaf0fe;
+  --ok:#12a150; --ok-soft:#e8f7ee; --bad:#e5484d; --bad-soft:#fdecec;
+  --warn:#c98a00; --warn-soft:#fff5e0;
+  --code-bg:#f4f6fa; --radius:12px;
+  --mono:"JetBrains Mono","Cascadia Code",Consolas,"SF Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+code,pre{font-family:var(--mono)}
+code{background:var(--code-bg);padding:2px 6px;border-radius:5px;font-size:.88em;color:#b0348c}
+pre{
+  background:var(--code-bg);border:1px solid var(--line);border-radius:10px;
+  padding:14px 16px;overflow:auto;font-size:13px;line-height:1.65;color:#2b3240;
+}
+pre code{background:none;padding:0;color:inherit;font-size:inherit}
+
+/* ---------- 布局 ---------- */
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px 80px}
+header.top{
+  background:linear-gradient(135deg,#2f6fed,#7a4ff0);color:#fff;
+  padding:38px 20px 30px;margin-bottom:26px;
+}
+header.top .inner{max-width:1080px;margin:0 auto}
+header.top h1{margin:0 0 8px;font-size:27px;letter-spacing:-.4px}
+header.top p{margin:0;opacity:.93;font-size:14.5px;max-width:760px}
+.badges{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px}
+.badge{
+  background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);
+  padding:5px 11px;border-radius:100px;font-size:12.5px;backdrop-filter:blur(4px);
+}
+
+/* ---------- 标签页 ---------- */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:22px;border-bottom:2px solid var(--line);padding-bottom:0}
+.tab{
+  background:none;border:none;cursor:pointer;font:inherit;font-size:14.5px;font-weight:600;
+  color:var(--ink-3);padding:10px 16px;border-bottom:2.5px solid transparent;margin-bottom:-2px;
+  border-radius:8px 8px 0 0;transition:.15s;
+}
+.tab:hover{color:var(--ink-2);background:#eef1f7}
+.tab.on{color:var(--brand);border-bottom-color:var(--brand);background:var(--brand-soft)}
+.panel{display:none}
+.panel.on{display:block;animation:fade .22s ease}
+@keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* ---------- 卡片 ---------- */
+.card{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:22px 24px;margin-bottom:16px;box-shadow:0 1px 2px rgba(20,30,60,.03);
+}
+.card h2{margin:0 0 4px;font-size:18px}
+.card h3{margin:22px 0 8px;font-size:15.5px;color:var(--ink-2)}
+.muted{color:var(--ink-3);font-size:13.5px}
+
+/* ---------- 进度 ---------- */
+.progress{height:7px;background:var(--line);border-radius:100px;overflow:hidden;margin:12px 0 6px}
+.progress > i{display:block;height:100%;background:linear-gradient(90deg,#2f6fed,#7a4ff0);width:0;transition:width .35s ease}
+.statrow{display:flex;gap:20px;flex-wrap:wrap;font-size:13.5px;color:var(--ink-2);margin-top:6px}
+.statrow b{color:var(--ink);font-size:15px}
+
+/* ---------- 题目 ---------- */
+.q{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:20px 22px;margin-bottom:12px;transition:.18s;
+}
+.q.right{border-color:#9fdcb8;background:linear-gradient(180deg,#fbfefc,#fff)}
+.q.wrong{border-color:#f2b8b9;background:linear-gradient(180deg,#fffbfb,#fff)}
+.q-head{display:flex;gap:12px;align-items:flex-start}
+.q-no{
+  flex:0 0 30px;height:30px;border-radius:8px;background:var(--brand-soft);color:var(--brand);
+  font:600 13px/30px var(--mono);text-align:center;
+}
+.q-text{flex:1;padding-top:3px;font-size:15px}
+.q-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.btn{
+  font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;border-radius:8px;
+  padding:8px 16px;border:1px solid var(--line);background:#fff;color:var(--ink-2);transition:.15s;
+}
+.btn:hover{background:#f4f6fa;border-color:#cfd6e4}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.primary:hover{background:#245ed6}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.opt{
+  display:flex;gap:10px;align-items:flex-start;cursor:pointer;
+  border:1.5px solid var(--line);border-radius:9px;padding:11px 14px;margin-top:9px;transition:.15s;
+}
+.opt:hover{border-color:#b9c7e6;background:#fafbff}
+.opt .mark{
+  flex:0 0 22px;height:22px;border-radius:50%;border:1.5px solid #c3cbdb;
+  font:600 12px/20px var(--mono);text-align:center;color:var(--ink-3);margin-top:1px;
+}
+.opt.sel{border-color:var(--brand);background:var(--brand-soft)}
+.opt.sel .mark{background:var(--brand);border-color:var(--brand);color:#fff}
+.opt.good{border-color:var(--ok);background:var(--ok-soft)}
+.opt.good .mark{background:var(--ok);border-color:var(--ok);color:#fff}
+.opt.bad{border-color:var(--bad);background:var(--bad-soft)}
+.opt.bad .mark{background:var(--bad);border-color:var(--bad);color:#fff}
+.opt.locked{cursor:default}
+.explain{
+  margin-top:14px;padding:13px 16px;border-radius:9px;background:#f7f9fc;
+  border-left:3px solid var(--brand);font-size:13.8px;color:var(--ink-2);
+}
+.explain.good{background:var(--ok-soft);border-left-color:var(--ok)}
+.explain.bad{background:var(--bad-soft);border-left-color:var(--bad)}
+.explain b{color:var(--ink)}
+.tag{
+  display:inline-block;background:var(--brand-soft);color:var(--brand);font-size:11.5px;
+  font-weight:600;padding:2px 9px;border-radius:100px;margin-left:6px;vertical-align:1px;
+}
+.verdict{font-weight:700;margin-right:6px}
+.verdict.ok{color:var(--ok)}
+.verdict.no{color:var(--bad)}
+
+/* ---------- 表格 ---------- */
+table{border-collapse:collapse;width:100%;font-size:13.8px;margin:10px 0}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}
+th{background:#f4f6fa;font-weight:600;color:var(--ink-2)}
+tbody tr:nth-child(even){background:#fbfcfe}
+
+/* ---------- 搜索 ---------- */
+.searchbar{display:flex;gap:10px;margin-bottom:16px}
+.searchbar input{
+  flex:1;font:inherit;font-size:14.5px;padding:11px 15px;border:1.5px solid var(--line);
+  border-radius:10px;background:#fff;color:var(--ink);outline:none;transition:.15s;
+}
+.searchbar input:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+
+/* ---------- 速查 ---------- */
+details.iv{
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  margin-bottom:9px;overflow:hidden;
+}
+details.iv[open]{border-color:#c9d8f7;box-shadow:0 2px 10px rgba(47,111,237,.07)}
+details.iv > summary{
+  cursor:pointer;padding:14px 18px;font-weight:600;font-size:14.5px;list-style:none;
+  display:flex;gap:11px;align-items:flex-start;transition:.15s;
+}
+details.iv > summary::-webkit-details-marker{display:none}
+details.iv > summary:hover{background:#f7f9fd}
+details.iv[open] > summary{background:var(--brand-soft);color:#1d4fb8}
+details.iv .body{padding:4px 18px 18px;font-size:14px;color:var(--ink-2);border-top:1px solid var(--line)}
+.numchip{
+  flex:0 0 26px;height:26px;border-radius:7px;background:#eef1f7;color:var(--ink-3);
+  font:600 12px/26px var(--mono);text-align:center;margin-top:1px;
+}
+details.iv[open] .numchip{background:var(--brand);color:#fff}
+
+.empty{text-align:center;color:var(--ink-3);padding:50px 20px;font-size:14.5px}
+.hint{
+  background:var(--warn-soft);border-left:3px solid var(--warn);padding:11px 15px;
+  border-radius:8px;font-size:13.5px;color:#7a5a00;margin:12px 0;
+}
+footer{text-align:center;color:var(--ink-3);font-size:13px;padding:34px 20px 0}
+@media (max-width:640px){
+  .wrap{padding:0 14px 60px}
+  header.top{padding:26px 14px 22px}
+  header.top h1{font-size:21px}
+  .card,.q{padding:16px 15px}
+  .tab{padding:9px 11px;font-size:13.5px}
+}
+@media print{
+  .tabs,.q-actions,.searchbar,header.top .badges{display:none}
+  .panel{display:block!important}
+  .card,.q{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="inner">
+    <h1>Git / 网络 HTTP / Docker 从零到一 · 练习站</h1>
+    <p>配套《Git / 网络 HTTP / Docker 从零到一》教程的动手练习。所有题目、答案与解析均来自教程正文，命令与输出均真实可复现。进度自动保存在本机浏览器。</p>
+    <div class="badges">
+      <span class="badge">60 道判断 + 75 道说输出</span>
+      <span class="badge">90+ 道面试题</span>
+      <span class="badge">即时判分 + 解析</span>
+      <span class="badge">错题自动收集</span>
+      <span class="badge">离线可用</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="tabs">
+    <button class="tab on" data-p="p-home">概览</button>
+    <button class="tab" data-p="p-s1">第一关 · 判断对错 <span class="tag" id="tag-s1"></span></button>
+    <button class="tab" data-p="p-s2">第二关 · 说出输出 <span class="tag" id="tag-s2"></span></button>
+    <button class="tab" data-p="p-wrong">错题本</button>
+    <button class="tab" data-p="p-iv">面试速查</button>
+  </div>
+
+  <!-- ========== 概览 ========== -->
+  <section class="panel on" id="p-home">
+    <div class="card">
+      <h2>你的进度</h2>
+      <div class="progress"><i id="bar"></i></div>
+      <div class="statrow">
+        <span>已答 <b id="st-done">0</b> / <span id="st-total">60</span></span>
+        <span>正确 <b id="st-ok">0</b></span>
+        <span>正确率 <b id="st-rate">—</b></span>
+        <span>错题 <b id="st-wrong">0</b></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>怎么用这个练习站</h2>
+      <p class="muted" style="margin-top:2px">配合教程的正确顺序：</p>
+      <table>
+        <thead><tr><th style="width:56px">顺序</th><th>做什么</th><th style="width:180px">对应教程</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>读对应篇的速通版，把基础操作跑起来</td><td>速通版 / 第 01 章</td></tr>
+          <tr><td>2</td><td>读某篇 00–05 章，边读边做<b>第一关判断</b></td><td>docs/git|http|docker 00–05</td></tr>
+          <tr><td>3</td><td>读核心章后，做<b>第二关说输出</b></td><td>各篇 02–05 章</td></tr>
+          <tr><td>4</td><td>把<b>错题本</b>清空，回到对应章节重读</td><td>—</td></tr>
+          <tr><td>5</td><td>面试前刷<b>面试速查</b>，先自答再展开对答案</td><td>各篇 11 章</td></tr>
+        </tbody>
+      </table>
+      <div class="hint"><b>关键动作：</b>第一关每题都要说出"为什么"，不要凭感觉猜。这 60 道判断题覆盖的是三篇最容易搞错的核心概念（Git 是快照不是差异 / 分层各自解决一个问题 / 镜像不可变、容器是实例），猜对了也等于没学会。</div>
+    </div>
+
+    <div class="card">
+      <h2>配套资源</h2>
+      <table>
+        <thead><tr><th>资源</th><th>位置</th></tr></thead>
+        <tbody>
+          <tr><td>📖 单文件 HTML 阅读版（三篇 × 12 章 + 速通版）</td><td><code>Git-从零到一-阅读版.html</code></td></tr>
+          <tr><td>🚀 三个速通版（各约 2 小时）</td><td><code>速通版-2小时上手Git.md</code> 等</td></tr>
+          <tr><td>💻 全部可运行示例（零第三方依赖）</td><td><code>examples/</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ========== 第一关 ========== -->
+  <section class="panel" id="p-s1">
+    <div class="card">
+      <h2>第一关 · 概念快问快答（60 题）</h2>
+      <p class="muted">判断下面每句话是<b>对</b>还是<b>错</b>。不要猜，想清楚理由。三篇各 20 题，共 60 题。</p>
+      <div class="progress"><i id="bar-s1"></i></div>
+      <div class="statrow">
+        <span>已答 <b id="s1-done">0</b>/60</span>
+        <span>正确 <b id="s1-ok">0</b></span>
+      </div>
+      <div class="q-actions">
+        <button class="btn ghost" id="s1-reset">重置本关</button>
+      </div>
+    </div>
+    <div id="list-s1"></div>
+  </section>
+
+  <!-- ========== 第二关 ========== -->
+  <section class="panel" id="p-s2">
+    <div class="card">
+      <h2>第二关 · 说出输出（75 题）</h2>
+      <p class="muted">每题问的是：<b>下面这段代码/命令执行后的结果是什么？</b>先自己在脑子里跑一遍，再点"查看答案"对照。答案全部真实可复现，不是凭记忆写的。三篇各 25 题，共 75 题。</p>
+      <div class="progress"><i id="bar-s2"></i></div>
+      <div class="statrow">
+        <span>已看答案 <b id="s2-done">0</b>/75</span>
+      </div>
+      <div class="q-actions"><button class="btn ghost" id="s2-reset">重置本关</button></div>
+    </div>
+    <div id="list-s2"></div>
+  </section>
+
+  <!-- ========== 错题本 ========== -->
+  <section class="panel" id="p-wrong">
+    <div class="card">
+      <h2>错题本</h2>
+      <p class="muted">第一关答错的题会自动收集到这里。清空错题本的正确方式不是"背答案"，而是<b>回到对应章节重读</b>，再回来重做一遍。</p>
+      <div class="q-actions">
+        <button class="btn ghost" id="wrong-clear">清空错题本</button>
+        <button class="btn ghost" id="all-reset">重置全部进度</button>
+      </div>
+    </div>
+    <div id="list-wrong"></div>
+  </section>
+
+  <!-- ========== 面试速查 ========== -->
+  <section class="panel" id="p-iv">
+    <div class="card">
+      <h2>面试速查 · 高频问答</h2>
+      <p class="muted">来自三篇各自的 <code>11-面试速查表.md</code>。用法：<b>先自己口头答一遍，再展开对答案。</b>直接看答案等于没看。</p>
+      <div class="searchbar">
+        <input id="iv-search" type="search" placeholder="搜索关键词，例如：commit、分支、三次握手、状态码、镜像、compose…">
+      </div>
+      <div class="statrow"><span>共 <b id="iv-count">0</b> 题</span></div>
+    </div>
+    <div id="list-iv"></div>
+  </section>
+
+  <footer>
+    Git / 网络 HTTP / Docker 从零到一教程 · 练习站　|　题库与解析均取自教程正文，命令与输出真实可复现
+  </footer>
+</div>
+
+<script id="bank" type="application/json">__BANK__</script>
+<script>
+(function(){
+  'use strict';
+  var BANK = JSON.parse(document.getElementById('bank').textContent);
+  var KEY = 'git-http-docker-tutorial-progress-v1';
+
+  /* ---------- 存储 ---------- */
+  function load(){
+    try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e){ return {}; }
+  }
+  function save(s){ try{ localStorage.setItem(KEY, JSON.stringify(s)); }catch(e){} }
+  var state = load();
+  state.s1 = state.s1 || {};   // { id: true/false } 是否答对
+  state.s2 = state.s2 || {};   // { id: true } 是否已查看答案
+
+  /* ---------- 工具 ---------- */
+  function el(tag, cls, html){
+    var d = document.createElement(tag);
+    if(cls) d.className = cls;
+    if(html != null) d.innerHTML = html;
+    return d;
+  }
+  function esc(s){
+    return String(s).replace(/[&<>"]/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+    });
+  }
+  /* 轻量 Markdown：行内 code / 加粗 */
+  function md(s){
+    return esc(s)
+      .replace(/`([^`]+)`/g, function(_,c){ return '<code>' + c + '</code>'; })
+      .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+      .replace(/\n/g, '<br>');
+  }
+  /* 代码块渲染 */
+  function codeBlock(src){
+    return '<pre><code>' + esc(src) + '</code></pre>';
+  }
+
+  /* ================= 第一关 ================= */
+  var listS1 = document.getElementById('list-s1');
+
+  function renderS1(){
+    listS1.innerHTML = '';
+    BANK.stage1.forEach(function(item){
+      var answered = Object.prototype.hasOwnProperty.call(state.s1, item.id);
+      var isRight = state.s1[item.id];
+      var wrap = el('div', 'q' + (answered ? (isRight ? ' right' : ' wrong') : ''));
+
+      var head = el('div', 'q-head');
+      head.appendChild(el('div', 'q-no', String(item.no)));
+      var qt = el('div', 'q-text');
+      qt.innerHTML = md(item.q);
+      head.appendChild(qt);
+      wrap.appendChild(head);
+
+      var opts = el('div', 'q-actions');
+      ['对','错'].forEach(function(label, i){
+        var val = i === 0;
+        var b = el('button', 'btn' + (answered ? '' : ' primary'));
+        b.textContent = label;
+        if(answered){
+          b.disabled = true;
+          if(val === item.answer) b.className = 'btn primary';
+          if(val !== item.answer && val === !item.answer && !isRight) b.className = 'btn ghost';
+        }
+        b.onclick = function(){
+          state.s1[item.id] = (val === item.answer);
+          save(state);
+          renderS1(); renderWrong(); refreshStats();
+        };
+        opts.appendChild(b);
+      });
+      if(answered){
+        var re = el('button', 'btn ghost', '重做');
+        re.onclick = function(){
+          delete state.s1[item.id];
+          save(state); renderS1(); renderWrong(); refreshStats();
+        };
+        opts.appendChild(re);
+      }
+      wrap.appendChild(opts);
+
+      if(answered){
+        var ex = el('div', 'explain ' + (isRight ? 'good' : 'bad'));
+        ex.innerHTML =
+          '<span class="verdict ' + (isRight ? 'ok' : 'no') + '">' +
+          (isRight ? '✓ 答对了' : '✗ 答错了') + '</span>' +
+          '正确答案：<b>' + (item.answer ? '对' : '错') + '</b>' +
+          (item.from ? '<span class="tag">' + esc(item.from) + '</span>' : '') +
+          '<br>' + md(item.why);
+        wrap.appendChild(ex);
+      }
+      listS1.appendChild(wrap);
+    });
+  }
+
+  /* ================= 第二关 ================= */
+  var listS2 = document.getElementById('list-s2');
+
+  function renderS2(){
+    listS2.innerHTML = '';
+    BANK.stage2.forEach(function(item){
+      var seen = !!state.s2[item.id];
+      var wrap = el('div', 'q');
+      var head = el('div', 'q-head');
+      head.appendChild(el('div', 'q-no', String(item.no)));
+      head.appendChild(el('div', 'q-text', '下面这段代码执行后输出什么？'));
+      wrap.appendChild(head);
+
+      if(item.code) wrap.insertAdjacentHTML('beforeend', codeBlock(item.code));
+
+      var acts = el('div', 'q-actions');
+      if(!seen){
+        var b = el('button', 'btn primary', '查看答案');
+        b.onclick = function(){ state.s2[item.id] = true; save(state); renderS2(); refreshStats(); };
+        acts.appendChild(b);
+      } else {
+        var b2 = el('button', 'btn ghost', '收起');
+        b2.onclick = function(){ delete state.s2[item.id]; save(state); renderS2(); refreshStats(); };
+        acts.appendChild(b2);
+      }
+      wrap.appendChild(acts);
+
+      if(seen){
+        var ex = el('div', 'explain good');
+        // 注意：字段名是 out（与 extract-quiz.mjs 输出一致），不是 type
+        ex.innerHTML = '实际输出：<code>' + esc(item.out) + '</code><br>' + md(item.note || '');
+        wrap.appendChild(ex);
+      }
+      listS2.appendChild(wrap);
+    });
+  }
+
+  /* ================= 错题本 ================= */
+  var listWrong = document.getElementById('list-wrong');
+
+  function renderWrong(){
+    listWrong.innerHTML = '';
+    var wrongs = BANK.stage1.filter(function(x){ return state.s1[x.id] === false; });
+    if(!wrongs.length){
+      listWrong.appendChild(el('div', 'empty', '🎉 错题本是空的。要么还没做第一关，要么你已经全对了。'));
+      return;
+    }
+    var info = el('div', 'card');
+    info.innerHTML = '<h2 style="font-size:15.5px">共 ' + wrongs.length + ' 道错题</h2>' +
+      '<p class="muted" style="margin:4px 0 0">按出处章节归类，建议回到对应章节重读后回来重做。</p>';
+    listWrong.appendChild(info);
+
+    wrongs.forEach(function(item){
+      var wrap = el('div', 'q wrong');
+      var head = el('div', 'q-head');
+      head.appendChild(el('div', 'q-no', String(item.no)));
+      var t = el('div', 'q-text');
+      t.innerHTML = md(item.q) +
+        (item.from ? '<span class="tag">回看 ' + esc(item.from) + '</span>' : '');
+      head.appendChild(t);
+      wrap.appendChild(head);
+
+      var ex = el('div', 'explain bad');
+      ex.innerHTML = '正确答案：<b>' + (item.answer ? '对' : '错') + '</b><br>' + md(item.why);
+      wrap.appendChild(ex);
+
+      var acts = el('div', 'q-actions');
+      var b = el('button', 'btn primary', '我懂了，重做这题');
+      b.onclick = function(){
+        delete state.s1[item.id];
+        save(state); renderS1(); renderWrong(); refreshStats();
+      };
+      acts.appendChild(b);
+      wrap.appendChild(acts);
+      listWrong.appendChild(wrap);
+    });
+  }
+
+  /* ================= 面试速查 ================= */
+  var listIv = document.getElementById('list-iv');
+  var ivSearch = document.getElementById('iv-search');
+
+  function renderIv(filter){
+    listIv.innerHTML = '';
+    var f = (filter || '').trim().toLowerCase();
+    var items = BANK.interview.filter(function(x){
+      if(!f) return true;
+      return (x.q + ' ' + x.a).toLowerCase().indexOf(f) >= 0;
+    });
+    document.getElementById('iv-count').textContent = items.length;
+    if(!items.length){
+      listIv.appendChild(el('div', 'empty', '没有匹配的题目，换个关键词试试。'));
+      return;
+    }
+    items.forEach(function(item, i){
+      var d = el('details', 'iv');
+      var sum = el('summary');
+      sum.appendChild(el('div', 'numchip', String(item.no || (i + 1))));
+      sum.appendChild(el('div', null, md(item.q)));
+      d.appendChild(sum);
+      var body = el('div', 'body');
+      body.innerHTML = md(item.a);
+      d.appendChild(body);
+      listIv.appendChild(d);
+    });
+  }
+  ivSearch.addEventListener('input', function(){ renderIv(ivSearch.value); });
+
+  /* ================= 统计 ================= */
+  function refreshStats(){
+    var total = BANK.stage1.length;
+    var done = 0, ok = 0;
+    BANK.stage1.forEach(function(x){
+      if(Object.prototype.hasOwnProperty.call(state.s1, x.id)){
+        done++;
+        if(state.s1[x.id]) ok++;
+      }
+    });
+    var wrong = done - ok;
+    var rate = done ? Math.round(ok / done * 100) + '%' : '—';
+
+    document.getElementById('st-done').textContent = done;
+    document.getElementById('st-total').textContent = total;
+    document.getElementById('st-ok').textContent = ok;
+    document.getElementById('st-rate').textContent = rate;
+    document.getElementById('st-wrong').textContent = wrong;
+    document.getElementById('bar').style.width = (done / total * 100) + '%';
+
+    document.getElementById('s1-done').textContent = done;
+    document.getElementById('s1-ok').textContent = ok;
+    document.getElementById('bar-s1').style.width = (done / total * 100) + '%';
+
+    var s2done = BANK.stage2.filter(function(x){ return state.s2[x.id]; }).length;
+    document.getElementById('s2-done').textContent = s2done;
+    document.getElementById('bar-s2').style.width = (s2done / BANK.stage2.length * 100) + '%';
+
+    document.getElementById('tag-s1').textContent = done ? ok + '/' + done : '';
+    document.getElementById('tag-s2').textContent = s2done ? s2done + '/' + BANK.stage2.length : '';
+  }
+
+  /* ================= 标签页 ================= */
+  var tabs = document.querySelectorAll('.tab');
+  tabs.forEach(function(t){
+    t.onclick = function(){
+      tabs.forEach(function(x){ x.classList.remove('on'); });
+      document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('on'); });
+      t.classList.add('on');
+      document.getElementById(t.dataset.p).classList.add('on');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+  });
+
+  /* ================= 按钮 ================= */
+  document.getElementById('s1-reset').onclick = function(){
+    if(!confirm('确定要重置第一关的全部作答吗？')) return;
+    state.s1 = {}; save(state); renderS1(); renderWrong(); refreshStats();
+  };
+  document.getElementById('s2-reset').onclick = function(){
+    if(!confirm('确定要收起第二关的全部答案吗？')) return;
+    state.s2 = {}; save(state); renderS2(); refreshStats();
+  };
+  document.getElementById('wrong-clear').onclick = function(){
+    if(!confirm('清空错题本？错题的作答记录也会一并清除。')) return;
+    Object.keys(state.s1).forEach(function(k){ if(state.s1[k] === false) delete state.s1[k]; });
+    save(state); renderS1(); renderWrong(); refreshStats();
+  };
+  document.getElementById('all-reset').onclick = function(){
+    if(!confirm('重置全部进度？此操作不可撤销。')) return;
+    state = { s1:{}, s2:{} }; save(state);
+    renderS1(); renderS2(); renderWrong(); refreshStats();
+  };
+
+  /* ================= 初始化 ================= */
+  renderS1(); renderS2(); renderWrong(); renderIv(''); refreshStats();
+})();
+</script>
+</body>
+</html>

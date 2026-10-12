@@ -1,0 +1,12 @@
+# .dockerignore：构建时忽略这些，别让它们进构建上下文
+# 好处：构建上下文变小 → 上传快；node_modules 不会污染镜像里的依赖
+
+node_modules
+npm-debug.log
+.git
+.gitignore
+.env
+*.md
+Dockerfile
+docker-compose.yml
+.dockerignore

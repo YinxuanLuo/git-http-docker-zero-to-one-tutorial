@@ -1,0 +1,25 @@
+# 09 章实战：app + db 两个服务的编排
+# 本文件是示例，不要求能自动跑
+
+services:
+  app:
+    build: .              # 用当前目录的 Dockerfile 构建
+    ports:
+      - "3000:3000"       # 宿主机 3000 → 容器 3000
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://app:secret@db:5432/app   # 用容器名 db 访问
+    depends_on:
+      - db                # 先启动 db，再启动 app（但不保证 db 已就绪）
+
+  db:
+    image: postgres:16    # 用现成镜像，不用自己构建
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: app
+    volumes:
+      - pgdata:/var/lib/postgresql/data   # 命名卷：数据独立于容器
+
+volumes:
+  pgdata:                 # 声明命名卷，由 compose 管理
